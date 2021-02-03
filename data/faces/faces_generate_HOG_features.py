@@ -1,12 +1,17 @@
 import os
 import cv2
 import csv
+import pandas as pd
 from skimage.feature import hog
 from skimage import color, exposure
 import random
 import matplotlib.pyplot as plt
+import pathlib
 
 FACE_IMAGES_DIRECTORY = "UTKFace"
+FACES_ZIP_DATA_FILE = os.path.join(pathlib.Path(__file__).parent.absolute(), "HOG_face_data.zip")
+FACES_DATA_FILE = os.path.join(pathlib.Path(__file__).parent.absolute(), "HOG_face_data.csv")
+
 if not os.path.isdir(FACE_IMAGES_DIRECTORY):
     print("Error: Could not find ", FACE_IMAGES_DIRECTORY, " directory.")
     print("please download from: https://drive.google.com/file/d/0BxYys69jI14kYVM3aVhKS1VhRUk/view?usp=sharing")
@@ -43,11 +48,10 @@ def create_feature_image():
         plt.show()
 
 
-def generate_HOG_features():
-    OUT_FILE = "HOG_face_data.csv"
+def generate_HOG_features(write_compressed_file=False):
     NUM_FEATURES = 512
 
-    csvfile = open(OUT_FILE, 'w')
+    csvfile = open(FACES_DATA_FILE, 'w')
 
     faces_data_csv = csv.writer(csvfile)
     columns = ["filename", "age", "sex", "race"]
@@ -73,7 +77,11 @@ def generate_HOG_features():
                 row.append(i)
             faces_data_csv.writerow(row)
 
+    if write_compressed_file:
+        df = pd.read_csv(FACES_DATA_FILE)
+        df.to_csv(FACES_ZIP_DATA_FILE, compression='gzip')
+
 
 if __name__ == "__main__":
-    # generate_HOG_features()
+    generate_HOG_features(write_compressed_file=True)
     create_feature_image()
