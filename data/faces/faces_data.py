@@ -21,6 +21,7 @@ def random_sample_instances(df, num_instances=3500):
     df = df.sample(frac=1, random_state=1).reset_index(drop=True)
     return df[:num_instances]
 
+# TODO add normalizing function as option at least
 
 def get_faces_dataset_with_filenames(num_instances=3500):
     # For being able to view image
