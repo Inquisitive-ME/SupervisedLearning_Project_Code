@@ -365,7 +365,11 @@ def plot_grid_search_2_params(gs_results, name_param_1, name_param_2, score_limi
     title = "Grid Search Scores "
     test_wrap_len = 21
     for key, value in unused_params.items():
-        title += "{} = {} ".format(key, round(value, 4))
+        try:
+            title += "{} = {} ".format(key, round(value, 4))
+        except TypeError:
+            title += "{} = {} ".format(key, value)
+
     title = textwrap.fill(title, test_wrap_len)
     ax.set_title(title, fontsize=16, fontweight='bold')
     ax.set_xlabel(name_param_1, fontsize=16)

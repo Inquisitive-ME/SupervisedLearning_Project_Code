@@ -8,6 +8,10 @@ from sklearn.svm import SVC
 from textwrap import wrap
 
 
+def get_cv():
+    return ShuffleSplit(n_splits=10, test_size=0.2, random_state=0)
+
+
 def perform_learning_curve(estimator, X, y, scoring, cv=None, n_jobs=None, train_sizes=np.linspace(.1, 1.0, 10)):
     """
     Reference: https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html#sphx-glr-auto-examples-model-selection-plot-learning-curve-py
@@ -97,6 +101,7 @@ def plot_learning_curve(train_scores, test_scores, train_sizes, title,  ylim=Non
     test_scores_std = np.std(test_scores, axis=1)
 
     # Plot learning curve
+    plt.rcParams["figure.figsize"] = (15, 10)
     plt.grid()
     plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
                          train_scores_mean + train_scores_std, alpha=0.1,
@@ -215,7 +220,18 @@ def plot_performance_curve(test_scores, fit_times, title, ylim=None, save_fig_na
         plt.show()
 
 
-def plot_validation_curve(estimator, X, y, param_name, param_range, title, scoring, ylim=None, cv=None, n_jobs=-1, tick_spacing=5):
+def perform_validation_curve(estimator, X, y, param_name, param_range, scoring, n_jobs=-1, cv=None):
+    train_scores, test_scores = validation_curve(
+        estimator, X, y, param_name=param_name, param_range=param_range, scoring=scoring, n_jobs=n_jobs, cv=cv)
+    train_scores_mean = np.mean(train_scores, axis=1)
+    train_scores_std = np.std(train_scores, axis=1)
+    test_scores_mean = np.mean(test_scores, axis=1)
+    test_scores_std = np.std(test_scores, axis=1)
+
+    return train_scores_mean, train_scores_std, test_scores_mean, test_scores_std
+
+
+def plot_validation_curve(train_scores_mean, train_scores_std, test_scores_mean, test_scores_std, param_name, param_range, title="Validation Curve", scoring='accuracy', ylim=None, tick_spacing=1):
     """
     Reference: https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html#sphx-glr-auto-examples-model-selection-plot-validation-curve-py
     :param estimator:
@@ -230,12 +246,6 @@ def plot_validation_curve(estimator, X, y, param_name, param_range, title, scori
     :param n_jobs:
     :return:
     """
-    train_scores, test_scores = validation_curve(
-        estimator, X, y, param_name=param_name, param_range=param_range, scoring=scoring, n_jobs=n_jobs, cv=cv)
-    train_scores_mean = np.mean(train_scores, axis=1)
-    train_scores_std = np.std(train_scores, axis=1)
-    test_scores_mean = np.mean(test_scores, axis=1)
-    test_scores_std = np.std(test_scores, axis=1)
 
     plt.title(title)
     plt.xlabel(param_name)
@@ -256,6 +266,22 @@ def plot_validation_curve(estimator, X, y, param_name, param_range, title, scori
     plt.grid()
     plt.legend(loc="best")
     plt.show()
+
+
+def full_learning_curve(estimator, X, y, title, scoring="accuracy", cv=None, n_jobs=-1, ylim=None, train_sizes=np.linspace(.1, 1.0, 10), save_fig_name=None, show_plot=True):
+    train_sizes, train_scores, test_scores, fit_times = perform_learning_curve(estimator, X, y, scoring, cv=cv, n_jobs=n_jobs, train_sizes=train_sizes)
+    plot_learning_curve(train_scores, test_scores, train_sizes, title,  ylim=ylim, save_fig_name=save_fig_name, show_plot=show_plot)
+
+    return train_sizes, train_scores, test_scores, fit_times
+
+
+def full_validaiton_curve(estimator, X, y, param_name, param_range, scoring, n_jobs=-1, cv=None, title="Validation Curve", ylim=None, tick_spacing=1):
+    train_scores_mean, train_scores_std, test_scores_mean, test_scores_std = perform_validation_curve(estimator, X, y, param_name, param_range, scoring, n_jobs=n_jobs, cv=cv)
+    try:
+        plot_validation_curve(train_scores_mean, train_scores_std, test_scores_mean, test_scores_std, param_name, param_range, title=title, scoring=scoring, ylim=ylim, tick_spacing=tick_spacing)
+    except:
+        pass
+    return train_scores_mean, train_scores_std, test_scores_mean, test_scores_std
 
 
 if __name__ == "__main__":
@@ -295,7 +321,8 @@ if __name__ == "__main__":
 
     parameters = {'criterion': criterion, 'min_samples_split': min_samples_split, 'min_samples_leaf': min_samples_leaf, 'max_features': max_features}
 
-    plot_validation_curve(estimator, X_train, y_train, "max_depth", max_depth, "Validation Curve", scoring="balanced_accuracy", ylim=ylim, cv=cv)
+    train_scores_mean, train_scores_std, test_scores_mean, test_scores_std = perform_validation_curve(estimator, X_train, y_train, "max_depth", max_depth, 'balanced_accuracy', cv=cv)
+    plot_validation_curve(train_scores_mean, train_scores_std, test_scores_mean, test_scores_std, "max_depth", max_depth, title="Validation Curve", scoring="balanced_accuracy", ylim=ylim, tick_spacing=5)
 
 
     # title = r"Learning Curves (SVM, RBF kernel, $\gamma=0.001$)"

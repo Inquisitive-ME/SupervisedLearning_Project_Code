@@ -10,6 +10,10 @@ def perform_grid_search(parameters, X_train, y_train, scoring, GS_FILE_NAME_PREF
     GS_FILE_NAME = GS_FILE_NAME_PREFIX
     for key, value in parameters.items():
         GS_FILE_NAME += ("_" + key)
+        try:
+            GS_FILE_NAME += ("_" + str(value[0]) + "-" + str(value[-1]))
+        except ValueError:
+            GS_FILE_NAME += ("_" + value[0] + "-" + value[-1])
     GS_FILE_NAME += ".pickle"
 
     if os.path.exists(GS_FILE_NAME):
