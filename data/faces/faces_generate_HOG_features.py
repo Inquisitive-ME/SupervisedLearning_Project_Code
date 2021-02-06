@@ -12,7 +12,7 @@ FACE_IMAGES_DIRECTORY = "UTKFace"
 FACES_ZIP_DATA_FILE = os.path.join(pathlib.Path(__file__).parent.absolute(), "HOG_face_data.zip")
 FACES_DATA_FILE = os.path.join(pathlib.Path(__file__).parent.absolute(), "HOG_face_data.csv")
 
-if not os.path.isdir(FACE_IMAGES_DIRECTORY):
+if not os.path.isdir(os.path.join(pathlib.Path(__file__).parent.absolute(), FACE_IMAGES_DIRECTORY)):
     print("Error: Could not find ", FACE_IMAGES_DIRECTORY, " directory.")
     print("please download from: https://drive.google.com/file/d/0BxYys69jI14kYVM3aVhKS1VhRUk/view?usp=sharing")
     raise FileNotFoundError
@@ -29,9 +29,9 @@ def create_feature_image():
         bgr = cv2.imread(f)
         rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
         gray = color.rgb2gray(rgb)
-        fd, hog_image = hog(gray, orientations=8, pixels_per_cell=(25, 25),
+        fd, hog_image = hog(gray, orientations=6, pixels_per_cell=(33, 33),
                             cells_per_block=(1, 1), visualize=True, multichannel=False, feature_vector=True)
-
+        print(fd.shape)
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 4), sharex=True, sharey=True)
 
         ax1.axis('off')
@@ -49,7 +49,15 @@ def create_feature_image():
 
 
 def generate_HOG_features(write_compressed_file=False):
-    NUM_FEATURES = 512
+    orientations = 6
+    pixels_per_cell = (33, 33)
+    test_file = os.listdir(FACE_IMAGES_DIRECTORY)[0]
+    bgr = cv2.imread(os.path.join(FACE_IMAGES_DIRECTORY, test_file))
+    rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+    gray = color.rgb2gray(rgb)
+    fd, hog_image = hog(gray, orientations=orientations, pixels_per_cell=pixels_per_cell,
+                        cells_per_block=(1, 1), visualize=True, multichannel=False, feature_vector=True)
+    NUM_FEATURES = fd.shape[0]
 
     csvfile = open(FACES_DATA_FILE, 'w')
 
@@ -71,7 +79,7 @@ def generate_HOG_features(write_compressed_file=False):
             bgr = cv2.imread(f)
             rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
             gray = color.rgb2gray(rgb)
-            fd, hog_image = hog(gray, orientations=8, pixels_per_cell=(25, 25),
+            fd, hog_image = hog(gray, orientations=orientations, pixels_per_cell=pixels_per_cell,
                                 cells_per_block=(1, 1), visualize=True, multichannel=False, feature_vector=True)
             for i in fd:
                 row.append(i)

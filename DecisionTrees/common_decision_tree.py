@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 from sklearn import tree
 from sklearn.model_selection import GridSearchCV
-import matplotlib.pyplot as plt
 import joblib
 import os
 
@@ -20,7 +19,7 @@ def perform_grid_search(parameters, X_train, y_train, GS_FILE_NAME_PREFIX):
     else:
         print("Grid Search Will be Saved to ", GS_FILE_NAME)
 
-        gs = GridSearchCV(tree.DecisionTreeClassifier(criterion='entropy'), parameters, return_train_score=True,
+        gs = GridSearchCV(tree.DecisionTreeClassifier(), parameters, return_train_score=True,
                           verbose=10, n_jobs=-1)
         gs.fit(X_train, y_train)
 

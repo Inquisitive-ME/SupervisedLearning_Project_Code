@@ -37,7 +37,7 @@ def get_faces_dataset_with_filenames(num_instances=3500):
     return filenames_train, filenames_test, X_train, X_test, y_train, y_test
 
 
-def get_faces_dataset(num_instances=10000):
+def get_faces_dataset(num_instances=3500):
     faces = random_sample_instances(import_faces_dataset(), num_instances=num_instances)
     labels = faces["sex"].copy()
     features = faces.drop(["filename", "age", "sex", "race"], axis=1)
