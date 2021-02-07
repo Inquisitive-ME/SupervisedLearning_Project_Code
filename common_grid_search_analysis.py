@@ -89,6 +89,7 @@ def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_val
         ax[i].legend(loc="upper left")
         ax[i].yaxis.set_tick_params(labelbottom=True)
         ax[i].set_title(title)
+        ax[i].grid(True)
 
     param_string = ""
     for param in param_names:
@@ -169,6 +170,7 @@ def plot_grid_search_training_times(gs_results, PLOT_PREFIX, unused_params_value
         ax[i].legend(loc="upper right")
         ax[i].yaxis.set_tick_params(labelbottom=True)
         ax[i].set_title(title)
+        ax[i].grid(True)
 
     param_string = ""
     for param in param_names:
@@ -283,6 +285,7 @@ def plot_grid_search_model_complexity_and_training(gs_results, PLOT_PREFIX, unus
         ax[0, i].legend(loc="upper left")
         ax[0, i].yaxis.set_tick_params(labelbottom=True)
         ax[0, i].set_title(title)
+        ax[0, i].grid(True)
 
         ax[1, i].plot(x, y_1, label="Fit Time", marker=".")
         ax[1, i].fill_between(x, y_1 - e_1, y_1 + e_1, alpha=0.2, lw=2)
@@ -292,6 +295,7 @@ def plot_grid_search_model_complexity_and_training(gs_results, PLOT_PREFIX, unus
         ax[1, i].set_xlabel(plot_param.upper())
         ax[1, i].legend(loc="upper left")
         ax[1, i].yaxis.set_tick_params(labelbottom=True)
+        ax[1, i].grid(True)
 
 
 
