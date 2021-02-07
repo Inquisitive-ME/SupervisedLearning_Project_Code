@@ -21,10 +21,18 @@ def import_wine_dataset() -> pd.DataFrame:
 
 
 def change_labels_low_avg_high(wine: pd.DataFrame) -> pd.DataFrame:
+    # Convert Low Average High
     wine.quality.values[wine.quality.values < 6] = 0
     wine.quality.values[wine.quality.values == 6] = 1
     wine.quality.values[wine.quality.values > 6] = 2
-    return wine
+
+    # Distinguish only between average and high quality
+    wine = wine[wine.quality != 0]
+    wine.quality.values[wine.quality.values == 1] = 0
+    wine.quality.values[wine.quality.values == 2] = 1
+    # Get even distribution
+    test = wine.groupby('quality').apply(lambda x: x.sample(min(wine.groupby('quality')['quality'].count()))).reset_index(drop=True)
+    return test
 
 
 def get_normalized_train_test_split(wine: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -32,8 +40,7 @@ def get_normalized_train_test_split(wine: pd.DataFrame) -> Tuple[np.ndarray, np.
     features = wine.drop(["quality"], axis=1)
 
     # Test Train Split
-    X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(features, labels, test_size=0.2,
-                                                                                random_state=42)
+    X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(features, labels, test_size=0.2, shuffle=True, random_state=42)
     NORMALIZE = True
     MIN_MAX = True
     if NORMALIZE:

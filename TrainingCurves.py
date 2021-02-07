@@ -231,7 +231,7 @@ def perform_validation_curve(estimator, X, y, param_name, param_range, scoring, 
     return train_scores_mean, train_scores_std, test_scores_mean, test_scores_std
 
 
-def plot_validation_curve(train_scores_mean, train_scores_std, test_scores_mean, test_scores_std, param_name, param_range, title="Validation Curve", scoring='accuracy', ylim=None, tick_spacing=1):
+def plot_validation_curve(train_scores_mean, train_scores_std, test_scores_mean, test_scores_std, param_name, param_range, title="Validation Curve", scoring='accuracy', ylim=None, tick_spacing=1, rotation='horizontal'):
     """
     Reference: https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html#sphx-glr-auto-examples-model-selection-plot-validation-curve-py
     :param estimator:
@@ -262,7 +262,7 @@ def plot_validation_curve(train_scores_mean, train_scores_std, test_scores_mean,
     plt.fill_between(param_range, test_scores_mean - test_scores_std,
                      test_scores_mean + test_scores_std, alpha=0.2,
                      color="navy", lw=2)
-    plt.xticks(param_range[::tick_spacing])
+    plt.xticks(param_range[::tick_spacing], rotation=rotation)
     plt.grid()
     plt.legend(loc="best")
     plt.show()
