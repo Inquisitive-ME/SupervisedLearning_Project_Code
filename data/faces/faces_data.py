@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import sklearn
 import sklearn.model_selection
+from sklearn import preprocessing
 
 try:
     from data.faces.faces_generate_HOG_features import FACES_ZIP_DATA_FILE, FACES_DATA_FILE
@@ -21,7 +22,19 @@ def random_sample_instances(df, num_instances=3500):
     df = df.sample(frac=1, random_state=1).reset_index(drop=True)
     return df[:num_instances]
 
-# TODO add normalizing function as option at least
+def normalize_dataset(train, test, MIN_MAX=True):
+    if MIN_MAX:
+        scaler = preprocessing.MinMaxScaler()
+    else:
+        scaler = preprocessing.StandardScaler()
+
+    train_scaled = scaler.fit_transform(train.values)
+    train = pd.DataFrame(train_scaled, columns=train.columns)
+
+    test_scaled = scaler.transform(test.values)
+    test = pd.DataFrame(test_scaled, columns=test.columns)
+
+    return train, test
 
 def get_faces_dataset_with_filenames(num_instances=3500):
     # For being able to view image

@@ -51,7 +51,7 @@ def get_normalized_train_test_split(wine: pd.DataFrame) -> Tuple[np.ndarray, np.
         X_train_scaled = scaler.fit_transform(X_train.values)
         X_train = pd.DataFrame(X_train_scaled, columns=X_train.columns)
 
-        X_test_scaled = scaler.fit_transform(X_test.values)
+        X_test_scaled = scaler.transform(X_test.values)
         X_test = pd.DataFrame(X_test_scaled, columns=X_test.columns)
 
     return X_train, X_test, y_train, y_test
