@@ -22,7 +22,7 @@ class my_MLPClassifier(MLPClassifier):
                          verbose=10, random_state=1)
 
 
-def perform_grid_search(parameters, X_train, y_train, scoring, GS_FILE_NAME_PREFIX):
+def perform_grid_search(parameters, X_train, y_train, scoring, GS_FILE_NAME_PREFIX,  default_parameters={}):
     GS_FILE_NAME = GS_FILE_NAME_PREFIX
     for key, value in parameters.items():
         GS_FILE_NAME += ("_" + key)
@@ -39,7 +39,7 @@ def perform_grid_search(parameters, X_train, y_train, scoring, GS_FILE_NAME_PREF
     else:
         print("Grid Search Will be Saved to ", GS_FILE_NAME)
 
-        gs = GridSearchCV(MLPClassifier(), parameters, scoring=scoring, return_train_score=True,
+        gs = GridSearchCV(MLPClassifier(**default_parameters), parameters, scoring=scoring, return_train_score=True,
                           verbose=10, n_jobs=-1)
         gs.fit(X_train, y_train)
 

@@ -4,6 +4,21 @@ import matplotlib.pyplot as plt
 import textwrap
 
 
+def convert_nn_layers_parameter(hidden_layer_sizes):
+    temp = ""
+    for i in hidden_layer_sizes:
+        temp += (str(i) + " ,")
+    temp = temp[:-2]
+    return temp
+
+
+def convert_nn_layers_parameter_list(hidden_layer_sizes_list):
+    string_hidden_layer_size = []
+    for i in hidden_layer_sizes_list:
+        string_hidden_layer_size.append(convert_nn_layers_parameter(i))
+    return string_hidden_layer_size
+
+
 def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_value_dict=None):
     """
     References:
@@ -53,11 +68,15 @@ def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_val
         mask = np.ones(np.array(train_scores_mean).shape, dtype=bool)
         title = ""
         for best_param, values in param_values.items():
+            if isinstance(values[0], list):
+                values = convert_nn_layers_parameter_list(values)
             if plot_param != best_param:
                 if unused_params_value_dict is None or best_param not in unused_params_value_dict.keys():
                     best_param_value = gs_results.best_params_[best_param]
                 else:
                     best_param_value = unused_params_value_dict[best_param]
+                if isinstance(best_param_value, list):
+                    best_param_value = convert_nn_layers_parameter(best_param_value)
                 mask = mask & np.where(np.array(values) == best_param_value,True,False)
                 try:
                     title += (best_param + " = " + str(round(best_param_value, 4)) + " ")
@@ -65,12 +84,17 @@ def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_val
                     title += (best_param + " = " + best_param_value + " ")
         title = textwrap.fill(title, 20)
 
-
         x = np.array(np.array(param_values[plot_param])[mask])
         plot_test_scores = np.array(test_scores_mean)[mask]
         plot_test_std = np.array(test_scores_std)[mask]
         plot_train_scores = np.array(train_scores_mean)[mask]
         plot_train_std = np.array(train_scores_std)[mask]
+
+        if isinstance(x[0], list):
+            x = convert_nn_layers_parameter_list(x)
+            rotation = 'vertical'
+        else:
+            rotation = 'horizontal'
 
         ax[i].plot(x, plot_test_scores, label="Cross-validation Score",
                  color="navy", marker=".")
@@ -83,8 +107,7 @@ def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_val
                          plot_train_scores + plot_train_std, alpha=0.2,
                          color="darkorange", lw=2)
 
-        # ax[i].errorbar(x, y_1, e_1, linestyle='--', marker='o', label='test')
-        # ax[i].errorbar(x, y_2, e_2, linestyle='-', marker='^',label='train' )
+        plt.setp(ax[i].get_xticklabels(), rotation=rotation)
         ax[i].set_xlabel(plot_param.upper())
         ax[i].legend(loc="upper left")
         ax[i].yaxis.set_tick_params(labelbottom=True)
@@ -148,11 +171,15 @@ def plot_grid_search_training_times(gs_results, PLOT_PREFIX, unused_params_value
         mask = np.ones(np.array(fit_time_means).shape, dtype=bool)
         title = ""
         for best_param, values in param_values.items():
+            if isinstance(values[0], list):
+                values = convert_nn_layers_parameter_list(values)
             if plot_param != best_param:
                 if unused_params_value_dict is None or best_param not in unused_params_value_dict.keys():
                     best_param_value = gs_results.best_params_[best_param]
                 else:
                     best_param_value = unused_params_value_dict[best_param]
+                if isinstance(best_param_value, list):
+                    best_param_value = convert_nn_layers_parameter(best_param_value)
                 mask = mask & np.where(np.array(values) == best_param_value,True,False)
                 try:
                     title += (best_param + " = " + str(round(best_param_value, 4)) + " ")
@@ -160,6 +187,12 @@ def plot_grid_search_training_times(gs_results, PLOT_PREFIX, unused_params_value
                     title += (best_param + " = " + best_param_value + " ")
         title = textwrap.fill(title, 20)
         x = np.array(np.array(param_values[plot_param])[mask])
+        if isinstance(x[0], list):
+            x = convert_nn_layers_parameter_list(x)
+            rotation = 'vertical'
+        else:
+            rotation = 'horizontal'
+
         y_1 = np.array(fit_time_means)[mask]
         e_1 = np.array(fit_time_stds)[mask]
         y_2 = np.array(score_time_means)[mask]
@@ -171,6 +204,7 @@ def plot_grid_search_training_times(gs_results, PLOT_PREFIX, unused_params_value
         ax[i].yaxis.set_tick_params(labelbottom=True)
         ax[i].set_title(title)
         ax[i].grid(True)
+        plt.setp(ax[i].get_xticklabels(), rotation=rotation)
 
     param_string = ""
     for param in param_names:
@@ -247,11 +281,15 @@ def plot_grid_search_model_complexity_and_training(gs_results, PLOT_PREFIX, unus
         mask = np.ones(np.array(train_scores_mean).shape, dtype=bool)
         title = ""
         for best_param, values in param_values.items():
+            if isinstance(values[0], list):
+                values = convert_nn_layers_parameter_list(values)
             if plot_param != best_param:
                 if unused_params_value_dict is None or best_param not in unused_params_value_dict.keys():
                     best_param_value = gs_results.best_params_[best_param]
                 else:
                     best_param_value = unused_params_value_dict[best_param]
+                if isinstance(best_param_value, list):
+                    best_param_value = convert_nn_layers_parameter(best_param_value)
                 mask = mask & np.where(np.array(values) == best_param_value,True,False)
                 try:
                     title += (best_param + " = " + str(round(best_param_value, 4)) + " ")
@@ -261,6 +299,12 @@ def plot_grid_search_model_complexity_and_training(gs_results, PLOT_PREFIX, unus
 
 
         x = np.array(np.array(param_values[plot_param])[mask])
+        if isinstance(x[0], list):
+            x = convert_nn_layers_parameter_list(x)
+            rotation = 'vertical'
+        else:
+            rotation = 'horizontal'
+
         plot_test_scores = np.array(test_scores_mean)[mask]
         plot_test_std = np.array(test_scores_std)[mask]
         plot_train_scores = np.array(train_scores_mean)[mask]
@@ -296,7 +340,8 @@ def plot_grid_search_model_complexity_and_training(gs_results, PLOT_PREFIX, unus
         ax[1, i].legend(loc="upper left")
         ax[1, i].yaxis.set_tick_params(labelbottom=True)
         ax[1, i].grid(True)
-
+        plt.setp(ax[0, i].get_xticklabels(), rotation=rotation)
+        plt.setp(ax[1, i].get_xticklabels(), rotation=rotation)
 
 
     param_string = ""

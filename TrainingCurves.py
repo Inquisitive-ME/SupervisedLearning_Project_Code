@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from numpy.ma import mvoid
 from sklearn.model_selection import learning_curve, validation_curve
 from sklearn.model_selection import ShuffleSplit
 from data.wine.Wine_Quality_Data import get_wine_dataset
@@ -220,9 +221,9 @@ def plot_performance_curve(test_scores, fit_times, title, ylim=None, save_fig_na
         plt.show()
 
 
-def perform_validation_curve(estimator, X, y, param_name, param_range, scoring, n_jobs=-1, cv=None):
+def perform_validation_curve(estimator, X, y, param_name, param_range, scoring, n_jobs=-1, cv=None, verbose=1):
     train_scores, test_scores = validation_curve(
-        estimator, X, y, param_name=param_name, param_range=param_range, scoring=scoring, n_jobs=n_jobs, cv=cv)
+        estimator, X, y, param_name=param_name, param_range=param_range, scoring=scoring, n_jobs=n_jobs, cv=cv, verbose=verbose)
     train_scores_mean = np.mean(train_scores, axis=1)
     train_scores_std = np.std(train_scores, axis=1)
     test_scores_mean = np.mean(test_scores, axis=1)
@@ -247,6 +248,7 @@ def plot_validation_curve(train_scores_mean, train_scores_std, test_scores_mean,
     :return:
     """
 
+    plt.rcParams["figure.figsize"] = (15, 10)
     plt.title(title)
     plt.xlabel(param_name)
     plt.ylabel("Score: {}".format(scoring))
