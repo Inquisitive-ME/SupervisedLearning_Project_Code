@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import textwrap
+from sklearn.tree import DecisionTreeClassifier as DecisionTreeClassifier
 
 
 def convert_nn_layers_parameter(hidden_layer_sizes):
@@ -19,7 +20,126 @@ def convert_nn_layers_parameter_list(hidden_layer_sizes_list):
     return string_hidden_layer_size
 
 
-def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_value_dict=None):
+def convert_boosting_base_estimator(base_estimator_parameter: DecisionTreeClassifier) -> str:
+    return "ccp_alpha: " + str(base_estimator_parameter.ccp_alpha) + " max_depth: " + str(base_estimator_parameter.max_depth)
+
+
+def convert_boosting_base_estimator_parameters_list(base_estimator_parameters_list):
+    converted_parameters = []
+    for i in base_estimator_parameters_list:
+        converted_parameters.append(convert_boosting_base_estimator(i))
+    return converted_parameters
+
+def plot_grid_search_model_complexity_1param(gs_results, PLOT_PREFIX, plot_param, unused_params_value_dict=None, tick_spacing=1):
+    """
+    References:
+    https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
+    https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
+
+    :param gs_results:
+    :return:
+    """
+    cv_results = gs_results.cv_results_
+    cv_results = pd.DataFrame(cv_results)
+    # Get Test Scores Mean and std for each grid search
+    all_test_scores_mean = cv_results['mean_test_score']
+    all_test_scores_sd = cv_results['std_test_score']
+    all_train_scores_mean = cv_results['mean_train_score']
+    all_train_scores_sd = cv_results['std_train_score']
+    all_parameters = gs_results.cv_results_['params']
+
+    param_names = []
+    # Dictionary of all the parameter names as keys with the values of the parameters
+    # matched with the score and std arrays as the values
+    param_values = {}
+    for i in gs_results.cv_results_['params'][0].keys():
+        param_names.append(i)
+        param_values[i] = []
+
+    test_scores_mean = []
+    test_scores_std = []
+    train_scores_mean = []
+    train_scores_std = []
+    # Get arrays of scores, standard deviations and the value of each parameter
+    for train_mean, train_std, test_mean, test_std, params in \
+            zip(all_train_scores_mean, all_train_scores_sd, all_test_scores_mean, all_test_scores_sd, all_parameters):
+        train_scores_mean.append(train_mean)
+        train_scores_std.append(train_std)
+        test_scores_mean.append(test_mean)
+        test_scores_std.append(test_std)
+        for p in param_names:
+            param_values[p].append(params[p])
+
+    ## Ploting results
+    fig, ax = plt.subplots(1, 1, sharex='none', sharey='all',figsize=(20,10))
+    fig.suptitle('Score per parameter')
+    fig.text(0.04, 0.5, 'MEAN SCORE', va='center', rotation='vertical')
+
+    i=0
+    mask = np.ones(np.array(train_scores_mean).shape, dtype=bool)
+    title = ""
+    for best_param, values in param_values.items():
+        if isinstance(values[0], list):
+            values = convert_nn_layers_parameter_list(values)
+        elif isinstance(values[0], DecisionTreeClassifier):
+            values = convert_boosting_base_estimator_parameters_list(values)
+        if plot_param != best_param:
+            if unused_params_value_dict is None or best_param not in unused_params_value_dict.keys():
+                best_param_value = gs_results.best_params_[best_param]
+            else:
+                best_param_value = unused_params_value_dict[best_param]
+            if isinstance(best_param_value, list):
+                best_param_value = convert_nn_layers_parameter(best_param_value)
+            elif isinstance(best_param_value, DecisionTreeClassifier):
+                best_param_value = convert_boosting_base_estimator(best_param_value)
+            mask = mask & np.where(np.array(values) == best_param_value,True,False)
+            try:
+                title += (best_param + " = " + str(round(best_param_value, 4)) + " ")
+            except TypeError:
+                title += (best_param + " = " + best_param_value + " ")
+    title = textwrap.fill(title, 20)
+
+    x = np.array(np.array(param_values[plot_param])[mask])
+    plot_test_scores = np.array(test_scores_mean)[mask]
+    plot_test_std = np.array(test_scores_std)[mask]
+    plot_train_scores = np.array(train_scores_mean)[mask]
+    plot_train_std = np.array(train_scores_std)[mask]
+
+    if isinstance(x[0], list):
+        x = convert_nn_layers_parameter_list(x)
+        ax.xaxis.set_tick_params(rotation=90)
+    elif isinstance(x[0], DecisionTreeClassifier):
+        x = convert_boosting_base_estimator_parameters_list(x)
+        ax.xaxis.set_tick_params(rotation=90)
+
+    ax.plot(x, plot_test_scores, label="Cross-validation Score",
+               color="navy", marker=".")
+    ax.fill_between(x, plot_test_scores - plot_test_std,
+                       plot_test_scores + plot_test_std, alpha=0.2,
+                       color="navy", lw=2)
+    ax.plot(x, plot_train_scores, label="Training Score",
+               color="darkorange", marker=".")
+    ax.fill_between(x, plot_train_scores - plot_train_std,
+                       plot_train_scores + plot_train_std, alpha=0.2,
+                       color="darkorange", lw=2)
+
+    ax.xaxis.set_ticks(x[::tick_spacing])
+    ax.set_xlabel(plot_param.upper())
+    ax.legend(loc="upper left")
+    ax.yaxis.set_tick_params(labelbottom=True)
+    ax.set_title(title)
+    ax.grid(True)
+
+    param_string = ""
+    for param in param_names:
+        param_string += ("_" + param)
+    save_plot_name = PLOT_PREFIX + "GS_ModelComplexity" + param_string + ".png"
+    print("Plot saved as: ", save_plot_name)
+    #plt.savefig(save_plot_name, bbox_inches="tight")
+    plt.show()
+
+
+def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_value_dict=None, tick_spacing=1):
     """
     References:
     https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
@@ -70,6 +190,8 @@ def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_val
         for best_param, values in param_values.items():
             if isinstance(values[0], list):
                 values = convert_nn_layers_parameter_list(values)
+            elif isinstance(values[0], DecisionTreeClassifier):
+                values = convert_boosting_base_estimator_parameters_list(values)
             if plot_param != best_param:
                 if unused_params_value_dict is None or best_param not in unused_params_value_dict.keys():
                     best_param_value = gs_results.best_params_[best_param]
@@ -77,6 +199,8 @@ def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_val
                     best_param_value = unused_params_value_dict[best_param]
                 if isinstance(best_param_value, list):
                     best_param_value = convert_nn_layers_parameter(best_param_value)
+                elif isinstance(best_param_value, DecisionTreeClassifier):
+                    best_param_value = convert_boosting_base_estimator(best_param_value)
                 mask = mask & np.where(np.array(values) == best_param_value,True,False)
                 try:
                     title += (best_param + " = " + str(round(best_param_value, 4)) + " ")
@@ -92,9 +216,10 @@ def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_val
 
         if isinstance(x[0], list):
             x = convert_nn_layers_parameter_list(x)
-            rotation = 'vertical'
-        else:
-            rotation = 'horizontal'
+            ax[i].xaxis.set_tick_params(rotation=90)
+        elif isinstance(x[0], DecisionTreeClassifier):
+            x = convert_boosting_base_estimator_parameters_list(x)
+            ax[i].xaxis.set_tick_params(rotation=90)
 
         ax[i].plot(x, plot_test_scores, label="Cross-validation Score",
                  color="navy", marker=".")
@@ -107,7 +232,8 @@ def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_val
                          plot_train_scores + plot_train_std, alpha=0.2,
                          color="darkorange", lw=2)
 
-        plt.setp(ax[i].get_xticklabels(), rotation=rotation)
+        # plt.setp(ax[i].get_xticklabels(), rotation=rotation)
+        ax[i].xaxis.set_ticks(x[::tick_spacing])
         ax[i].set_xlabel(plot_param.upper())
         ax[i].legend(loc="upper left")
         ax[i].yaxis.set_tick_params(labelbottom=True)
@@ -122,7 +248,7 @@ def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_val
     plt.savefig(save_plot_name, bbox_inches="tight")
 
 
-def plot_grid_search_training_times(gs_results, PLOT_PREFIX, unused_params_value_dict=None):
+def plot_grid_search_training_times(gs_results, PLOT_PREFIX, unused_params_value_dict=None, tick_spacing=1):
     """
     References:
     https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
@@ -173,6 +299,8 @@ def plot_grid_search_training_times(gs_results, PLOT_PREFIX, unused_params_value
         for best_param, values in param_values.items():
             if isinstance(values[0], list):
                 values = convert_nn_layers_parameter_list(values)
+            elif isinstance(values[0], DecisionTreeClassifier):
+                values = convert_boosting_base_estimator_parameters_list(values)
             if plot_param != best_param:
                 if unused_params_value_dict is None or best_param not in unused_params_value_dict.keys():
                     best_param_value = gs_results.best_params_[best_param]
@@ -180,6 +308,8 @@ def plot_grid_search_training_times(gs_results, PLOT_PREFIX, unused_params_value
                     best_param_value = unused_params_value_dict[best_param]
                 if isinstance(best_param_value, list):
                     best_param_value = convert_nn_layers_parameter(best_param_value)
+                elif isinstance(best_param_value, DecisionTreeClassifier):
+                    best_param_value = convert_boosting_base_estimator(best_param_value)
                 mask = mask & np.where(np.array(values) == best_param_value,True,False)
                 try:
                     title += (best_param + " = " + str(round(best_param_value, 4)) + " ")
@@ -189,9 +319,10 @@ def plot_grid_search_training_times(gs_results, PLOT_PREFIX, unused_params_value
         x = np.array(np.array(param_values[plot_param])[mask])
         if isinstance(x[0], list):
             x = convert_nn_layers_parameter_list(x)
-            rotation = 'vertical'
-        else:
-            rotation = 'horizontal'
+            ax[i].xaxis.set_tick_params(rotation=90)
+        elif isinstance(x[0], DecisionTreeClassifier):
+            x = convert_boosting_base_estimator_parameters_list(x)
+            ax[i].xaxis.set_tick_params(rotation=90)
 
         y_1 = np.array(fit_time_means)[mask]
         e_1 = np.array(fit_time_stds)[mask]
@@ -204,7 +335,8 @@ def plot_grid_search_training_times(gs_results, PLOT_PREFIX, unused_params_value
         ax[i].yaxis.set_tick_params(labelbottom=True)
         ax[i].set_title(title)
         ax[i].grid(True)
-        plt.setp(ax[i].get_xticklabels(), rotation=rotation)
+        ax[i].xaxis.set_ticks(x[::tick_spacing])
+        # plt.setp(ax[i].get_xticklabels(), rotation=rotation)
 
     param_string = ""
     for param in param_names:
@@ -213,7 +345,7 @@ def plot_grid_search_training_times(gs_results, PLOT_PREFIX, unused_params_value
     print("Plot saved as: ", save_plot_name)
     plt.savefig(save_plot_name, bbox_inches="tight")
 
-def plot_grid_search_model_complexity_and_training(gs_results, PLOT_PREFIX, unused_params_value_dict=None):
+def plot_grid_search_model_complexity_and_training(gs_results, PLOT_PREFIX, unused_params_value_dict=None, tick_spacing=1):
     """
     References:
     https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
@@ -283,6 +415,8 @@ def plot_grid_search_model_complexity_and_training(gs_results, PLOT_PREFIX, unus
         for best_param, values in param_values.items():
             if isinstance(values[0], list):
                 values = convert_nn_layers_parameter_list(values)
+            elif isinstance(values[0], DecisionTreeClassifier):
+                values = convert_boosting_base_estimator_parameters_list(values)
             if plot_param != best_param:
                 if unused_params_value_dict is None or best_param not in unused_params_value_dict.keys():
                     best_param_value = gs_results.best_params_[best_param]
@@ -290,6 +424,8 @@ def plot_grid_search_model_complexity_and_training(gs_results, PLOT_PREFIX, unus
                     best_param_value = unused_params_value_dict[best_param]
                 if isinstance(best_param_value, list):
                     best_param_value = convert_nn_layers_parameter(best_param_value)
+                elif isinstance(best_param_value, DecisionTreeClassifier):
+                    best_param_value = convert_boosting_base_estimator(best_param_value)
                 mask = mask & np.where(np.array(values) == best_param_value,True,False)
                 try:
                     title += (best_param + " = " + str(round(best_param_value, 4)) + " ")
@@ -301,9 +437,12 @@ def plot_grid_search_model_complexity_and_training(gs_results, PLOT_PREFIX, unus
         x = np.array(np.array(param_values[plot_param])[mask])
         if isinstance(x[0], list):
             x = convert_nn_layers_parameter_list(x)
-            rotation = 'vertical'
-        else:
-            rotation = 'horizontal'
+            ax[0, i].xaxis.set_tick_params(rotation=90)
+            ax[1, i].xaxis.set_tick_params(rotation=90)
+        elif isinstance(x[0], DecisionTreeClassifier):
+            x = convert_boosting_base_estimator_parameters_list(x)
+            ax[0, i].xaxis.set_tick_params(rotation=90)
+            ax[1, i].xaxis.set_tick_params(rotation=90)
 
         plot_test_scores = np.array(test_scores_mean)[mask]
         plot_test_std = np.array(test_scores_std)[mask]
@@ -340,8 +479,10 @@ def plot_grid_search_model_complexity_and_training(gs_results, PLOT_PREFIX, unus
         ax[1, i].legend(loc="upper left")
         ax[1, i].yaxis.set_tick_params(labelbottom=True)
         ax[1, i].grid(True)
-        plt.setp(ax[0, i].get_xticklabels(), rotation=rotation)
-        plt.setp(ax[1, i].get_xticklabels(), rotation=rotation)
+        # plt.setp(ax[0, i].get_xticklabels(), rotation=rotation)
+        # plt.setp(ax[1, i].get_xticklabels(), rotation=rotation)
+        ax[0, i].xaxis.set_ticks(x[::tick_spacing])
+        ax[1, i].xaxis.set_ticks(x[::tick_spacing])
 
 
     param_string = ""

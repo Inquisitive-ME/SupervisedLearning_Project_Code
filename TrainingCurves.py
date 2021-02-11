@@ -121,7 +121,7 @@ def plot_learning_curve(train_scores, test_scores, train_sizes, title,  ylim=Non
         plt.ylim(*ylim)
     plt.xticks(train_sizes)
     plt.xlabel("Training examples")
-    plt.ylabel("Score")
+    plt.ylabel("Score: Accuracy")
 
     if save_fig_name is not None:
         plt.savefig(save_fig_name)

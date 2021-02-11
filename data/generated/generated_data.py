@@ -23,7 +23,11 @@ def test_add_noise(labels, percent_to_flip):
     noise_added_labels = []
     for i in labels:
         if random.random() < percent_to_flip:
-            noise_added_labels.append(np.random.choice(np.unique(labels)))
+            if i == 1:
+                noise_added_labels.append(0)
+            if i == 0:
+                noise_added_labels.append(1)
+            # noise_added_labels.append(np.random.choice(np.unique(labels)))
         else:
             noise_added_labels.append(i)
     return noise_added_labels
@@ -38,11 +42,11 @@ def generate_noisy_nonlinear_dataset_with_non_noisy_labels():
     random_state = 7
     x, y = make_classification(n_samples=3500, n_features=n_features, n_redundant=n_redundant,
                                n_informative=n_informative, n_classes=2, n_clusters_per_class=n_clusters_per_class,
-                               flip_y=0.0, hypercube=hypercube, random_state=random_state, class_sep=4)
+                               flip_y=0.0, hypercube=hypercube, random_state=random_state, class_sep=4, shuffle=True)
     x = np.apply_along_axis(lambda x: 2 ** x, 0, x)
     x = x / x.max(axis=0)
 
-    return x, test_add_noise(y, 0.3), y
+    return x, test_add_noise(y, 0.2), y
 
 
 def get_noisy_nonlinear():
