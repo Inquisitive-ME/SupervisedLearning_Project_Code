@@ -63,11 +63,11 @@ def perform_learning_curve(estimator, X, y, scoring, cv=None, n_jobs=None, train
         to be big enough to contain at least one sample from each class.
         (default: np.linspace(0.1, 1.0, 5))
     """
-    train_sizes, train_scores, test_scores, fit_times, _ = \
+    train_sizes, train_scores, test_scores, fit_times, score_times = \
         learning_curve(estimator, X, y, scoring=scoring, cv=cv, n_jobs=n_jobs,
                        train_sizes=train_sizes,
                        return_times=True)
-    return train_sizes, train_scores, test_scores, fit_times
+    return train_sizes, train_scores, test_scores, fit_times, score_times
 
 
 def plot_learning_curve(train_scores, test_scores, train_sizes, title,  ylim=None, save_fig_name=None, show_plot=True):
@@ -130,7 +130,7 @@ def plot_learning_curve(train_scores, test_scores, train_sizes, title,  ylim=Non
         plt.show()
 
 
-def plot_scalability_curve(fit_times, train_sizes, title, save_fig_name=None, show_plot=True):
+def plot_scalability_curve(fit_times, score_times, train_sizes, title, save_fig_name=None, show_plot=True):
     """
     Reference: https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html#sphx-glr-auto-examples-model-selection-plot-learning-curve-py
 
@@ -154,21 +154,29 @@ def plot_scalability_curve(fit_times, train_sizes, title, save_fig_name=None, sh
         (default: np.linspace(0.1, 1.0, 5))
     """
 
-    fig = plt.figure(figsize=(10, 15))
+    fig = plt.figure(figsize=(15, 10))
     axes = fig.add_subplot(111)
     axes.grid()
 
     fit_times_mean = np.mean(fit_times, axis=1)
     fit_times_std = np.std(fit_times, axis=1)
+    score_times_mean = np.mean(score_times, axis=1)
+    score_times_std = np.std(score_times, axis=1)
 
 
     # Plot n_samples vs fit_times
-    axes.plot(train_sizes, fit_times_mean, 'o-')
+    axes.plot(train_sizes, fit_times_mean, 'o-', label="train time")
     axes.fill_between(train_sizes, fit_times_mean - fit_times_std,
                          fit_times_mean + fit_times_std, alpha=0.1)
+
+    axes.plot(train_sizes, score_times_mean, 'o-', label="score time")
+    axes.fill_between(train_sizes, score_times_mean - score_times_std,
+                         score_times_mean + score_times_std, alpha=0.1)
+
     axes.set_xlabel("Training examples", fontsize=14)
-    axes.set_ylabel("fit_times", fontsize=14)
+    axes.set_ylabel("time (s)", fontsize=14)
     axes.set_title(title, fontsize=14, fontweight='bold')
+    axes.legend()
 
     if save_fig_name is not None:
         plt.savefig(save_fig_name)
@@ -196,7 +204,7 @@ def plot_performance_curve(test_scores, fit_times, title, ylim=None, save_fig_na
         to be big enough to contain at least one sample from each class.
         (default: np.linspace(0.1, 1.0, 5))
     """
-    fig = plt.figure(figsize=(10, 15))
+    fig = plt.figure(figsize=(15, 10))
     axes = fig.add_subplot(111)
     axes.grid()
 
