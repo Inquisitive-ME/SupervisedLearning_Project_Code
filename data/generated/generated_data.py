@@ -55,7 +55,7 @@ def get_noisy_nonlinear():
     X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X2, Y2, test_size=0.2, random_state=42)
 
     X_train = X_train / X_train.max(axis=0)
-    y_train = y_train / X_train.max(axis=0)
+    X_test = X_test / X_test.max(axis=0)
 
     return X_train, X_test, y_train, y_test
 
@@ -65,7 +65,7 @@ def get_noisy_nonlinear_with_non_noisy_labels():
     X_train, X_test, y_train, y_test, indices_train, indices_test = sklearn.model_selection.train_test_split(X2, Y_noise, [i for i in range(len(Y_noise))], test_size=0.2, random_state=42)
 
     X_train = X_train / X_train.max(axis=0)
-    y_train = y_train / X_train.max(axis=0)
+    X_test = X_test / X_test.max(axis=0)
 
     return X_train, X_test, y_train, y_test, Y2[indices_test]
 
@@ -85,3 +85,6 @@ def get_large_num_features_dataset():
 
     X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X2, Y2, test_size=0.2, random_state=42)
     return X_train, X_test, y_train, y_test
+
+if __name__ == '__main__':
+    get_noisy_nonlinear_with_non_noisy_labels()
