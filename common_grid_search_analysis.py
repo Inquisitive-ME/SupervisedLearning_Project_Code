@@ -30,7 +30,7 @@ def convert_boosting_base_estimator_parameters_list(base_estimator_parameters_li
         converted_parameters.append(convert_boosting_base_estimator(i))
     return converted_parameters
 
-def plot_grid_search_model_complexity_1param(gs_results, PLOT_PREFIX, plot_param, unused_params_value_dict=None, tick_spacing=1):
+def plot_grid_search_model_complexity_1param(gs_results, plot_param, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=1, text_wrap_len=30):
     """
     References:
     https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
@@ -72,8 +72,8 @@ def plot_grid_search_model_complexity_1param(gs_results, PLOT_PREFIX, plot_param
 
     ## Ploting results
     fig, ax = plt.subplots(1, 1, sharex='none', sharey='all',figsize=(20,10))
-    fig.suptitle('Score per parameter')
-    fig.text(0.04, 0.5, 'MEAN SCORE', va='center', rotation='vertical')
+    fig.suptitle('{} Model Complexity Curve for Parameter {}\n Data Set: {}'.format(ALGO, plot_param, DATASET))
+    fig.text(0.04, 0.5, 'Mean Score (Accuracy)', va='center', rotation='vertical')
 
     i=0
     mask = np.ones(np.array(train_scores_mean).shape, dtype=bool)
@@ -97,7 +97,7 @@ def plot_grid_search_model_complexity_1param(gs_results, PLOT_PREFIX, plot_param
                 title += (best_param + " = " + str(round(best_param_value, 4)) + " ")
             except TypeError:
                 title += (best_param + " = " + best_param_value + " ")
-    title = textwrap.fill(title, 20)
+    title = textwrap.fill(title, text_wrap_len)
 
     x = np.array(np.array(param_values[plot_param])[mask])
     plot_test_scores = np.array(test_scores_mean)[mask]
@@ -133,13 +133,13 @@ def plot_grid_search_model_complexity_1param(gs_results, PLOT_PREFIX, plot_param
     param_string = ""
     for param in param_names:
         param_string += ("_" + param)
-    save_plot_name = PLOT_PREFIX + "GS_ModelComplexity" + param_string + ".png"
+    save_plot_name = PLOT_SAVE_LOCATION + DATASET.replace(" ", "_") + "_" + ALGO + "_" + "GS_ModelComplexity" + param_string + ".png"
     print("Plot saved as: ", save_plot_name)
     #plt.savefig(save_plot_name, bbox_inches="tight")
     plt.show()
 
 
-def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_value_dict=None, tick_spacing=1):
+def plot_grid_search_model_complexity(gs_results, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=None, text_wrap_len=30):
     """
     References:
     https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
@@ -181,8 +181,8 @@ def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_val
 
     ## Ploting results
     fig, ax = plt.subplots(1,len(param_names),sharex='none', sharey='all',figsize=(20,10))
-    fig.suptitle('Score per parameter')
-    fig.text(0.04, 0.5, 'MEAN SCORE', va='center', rotation='vertical')
+    fig.suptitle('{} Model Complexity Curves per Parameter\n Data Set: {}'.format(ALGO, DATASET))
+    fig.text(0.04, 0.5, 'Mean Score (Accuracy)', va='center', rotation='vertical')
 
     for i, plot_param in enumerate(param_names):
         mask = np.ones(np.array(train_scores_mean).shape, dtype=bool)
@@ -206,7 +206,7 @@ def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_val
                     title += (best_param + " = " + str(round(best_param_value, 4)) + " ")
                 except TypeError:
                     title += (best_param + " = " + best_param_value + " ")
-        title = textwrap.fill(title, 20)
+        title = textwrap.fill(title, text_wrap_len)
 
         x = np.array(np.array(param_values[plot_param])[mask])
         plot_test_scores = np.array(test_scores_mean)[mask]
@@ -214,6 +214,7 @@ def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_val
         plot_train_scores = np.array(train_scores_mean)[mask]
         plot_train_std = np.array(train_scores_std)[mask]
 
+        rotation=0
         if isinstance(x[0], list):
             x = convert_nn_layers_parameter_list(x)
             ax[i].xaxis.set_tick_params(rotation=90)
@@ -232,8 +233,10 @@ def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_val
                          plot_train_scores + plot_train_std, alpha=0.2,
                          color="darkorange", lw=2)
 
-        # plt.setp(ax[i].get_xticklabels(), rotation=rotation)
-        ax[i].xaxis.set_ticks(x[::tick_spacing])
+        if tick_spacing is not None:
+            ax[i].xaxis.set_ticks(x[::tick_spacing[i]])
+        plt.setp(ax[i].get_xticklabels(), rotation=rotation)
+
         ax[i].set_xlabel(plot_param.upper())
         ax[i].legend(loc="upper left")
         ax[i].yaxis.set_tick_params(labelbottom=True)
@@ -243,12 +246,116 @@ def plot_grid_search_model_complexity(gs_results, PLOT_PREFIX, unused_params_val
     param_string = ""
     for param in param_names:
         param_string += ("_" + param)
-    save_plot_name = PLOT_PREFIX + "GS_ModelComplexity" + param_string + ".png"
+    save_plot_name = PLOT_SAVE_LOCATION + DATASET.replace(" ", "_") + "_" + ALGO + "_" + "GS_ModelComplexity" + param_string + ".png"
     print("Plot saved as: ", save_plot_name)
     plt.savefig(save_plot_name, bbox_inches="tight")
 
 
-def plot_grid_search_training_times(gs_results, PLOT_PREFIX, unused_params_value_dict=None, tick_spacing=1):
+def plot_grid_search_training_times_1param(gs_results, plot_param, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=None, text_wrap_len=30):
+    """
+    References:
+    https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
+    https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
+
+    :param gs_results:
+    :return:
+    """
+    cv_results = gs_results.cv_results_
+    cv_results = pd.DataFrame(cv_results)
+    # Get Test Scores Mean and std for each grid search
+    all_fit_times_mean = cv_results['mean_fit_time']
+    all_fit_times_sd = cv_results['std_fit_time']
+    all_score_times_mean = cv_results['mean_score_time']
+    all_score_times_sd = cv_results['std_score_time']
+    all_parameters = gs_results.cv_results_['params']
+
+    param_names = []
+    # Dictionary of all the parameter names as keys with the values of the parameters
+    # matched with the score and std arrays as the values
+    param_values = {}
+    for i in gs_results.cv_results_['params'][0].keys():
+        param_names.append(i)
+        param_values[i] = []
+
+    fit_time_means = []
+    fit_time_stds = []
+    score_time_means = []
+    score_time_stds = []
+    # Get arrays of scores, standard deviations and the value of each parameter
+    for fit_mean, fit_std, score_mean, score_std, params in \
+        zip(all_fit_times_mean, all_fit_times_sd, all_score_times_mean, all_score_times_sd, all_parameters):
+        fit_time_means.append(fit_mean)
+        fit_time_stds.append(fit_std)
+        score_time_means.append(score_mean)
+        score_time_stds.append(score_std)
+        for p in param_names:
+            param_values[p].append(params[p])
+
+    ## Ploting results
+    fig, ax = plt.subplots(1, 1,sharex='none', sharey='all',figsize=(20,10))
+    fig.suptitle('{} Training and Prediction time for Parameter {}\n Data Set: {}'.format(ALGO, plot_param, DATASET))
+    fig.text(0.04, 0.5, 'Mean Time (s)', va='center', rotation='vertical')
+
+    mask = np.ones(np.array(fit_time_means).shape, dtype=bool)
+    title = ""
+    for best_param, values in param_values.items():
+        if isinstance(values[0], list):
+            values = convert_nn_layers_parameter_list(values)
+        elif isinstance(values[0], DecisionTreeClassifier):
+            values = convert_boosting_base_estimator_parameters_list(values)
+        if plot_param != best_param:
+            if unused_params_value_dict is None or best_param not in unused_params_value_dict.keys():
+                best_param_value = gs_results.best_params_[best_param]
+            else:
+                best_param_value = unused_params_value_dict[best_param]
+            if isinstance(best_param_value, list):
+                best_param_value = convert_nn_layers_parameter(best_param_value)
+            elif isinstance(best_param_value, DecisionTreeClassifier):
+                best_param_value = convert_boosting_base_estimator(best_param_value)
+            mask = mask & np.where(np.array(values) == best_param_value,True,False)
+            try:
+                title += (best_param + " = " + str(round(best_param_value, 4)) + " ")
+            except TypeError:
+                title += (best_param + " = " + best_param_value + " ")
+    title = textwrap.fill(title, text_wrap_len)
+    x = np.array(np.array(param_values[plot_param])[mask])
+    rotation=0
+    if isinstance(x[0], list):
+        x = convert_nn_layers_parameter_list(x)
+        ax.xaxis.set_tick_params(rotation=90)
+    elif isinstance(x[0], DecisionTreeClassifier):
+        x = convert_boosting_base_estimator_parameters_list(x)
+        ax.xaxis.set_tick_params(rotation=90)
+
+    train_time_mean = np.array(fit_time_means)[mask]
+    train_time_std = np.array(fit_time_stds)[mask]
+    predict_time_mean = np.array(score_time_means)[mask]
+    predict_time_std = np.array(score_time_stds)[mask]
+
+    ax.plot(x, train_time_mean, label="Training Time", marker=".")
+    ax.fill_between(x, train_time_mean - train_time_std, train_time_mean + train_time_std, alpha=0.2, lw=2)
+    ax.plot(x, predict_time_mean, label="Prediction Time", marker=".")
+    ax.fill_between(x, predict_time_mean - predict_time_std, predict_time_mean + predict_time_std, alpha=0.2, lw=2)
+
+
+    ax.set_xlabel(plot_param.upper())
+    ax.legend(loc="upper right")
+    ax.yaxis.set_tick_params(labelbottom=True)
+    ax.set_title(title)
+    ax.grid(True)
+    if tick_spacing is not None:
+        ax.xaxis.set_ticks(x[::tick_spacing])
+    plt.setp(ax.get_xticklabels(), rotation=rotation)
+
+    param_string = ""
+    for param in param_names:
+        param_string += ("_" + param)
+    save_plot_name = PLOT_SAVE_LOCATION + DATASET.replace(" ", "_") + "_" + ALGO + "_" + "GS_Times" + param_string + ".png"
+    print("Plot saved as: ", save_plot_name)
+    plt.savefig(save_plot_name, bbox_inches="tight")
+
+
+def plot_grid_search_training_times(gs_results, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=None, text_wrap_len=30):
     """
     References:
     https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
@@ -290,8 +397,8 @@ def plot_grid_search_training_times(gs_results, PLOT_PREFIX, unused_params_value
 
     ## Ploting results
     fig, ax = plt.subplots(1,len(param_names),sharex='none', sharey='all',figsize=(20,10))
-    fig.suptitle('Train / Score time per parameter')
-    fig.text(0.04, 0.5, 'MEAN Time', va='center', rotation='vertical')
+    fig.suptitle('{} Training and Prediction time per parameter\n Data Set: {}'.format(ALGO, DATASET))
+    fig.text(0.04, 0.5, 'Mean Time (s)', va='center', rotation='vertical')
 
     for i, plot_param in enumerate(param_names):
         mask = np.ones(np.array(fit_time_means).shape, dtype=bool)
@@ -315,8 +422,9 @@ def plot_grid_search_training_times(gs_results, PLOT_PREFIX, unused_params_value
                     title += (best_param + " = " + str(round(best_param_value, 4)) + " ")
                 except TypeError:
                     title += (best_param + " = " + best_param_value + " ")
-        title = textwrap.fill(title, 20)
+        title = textwrap.fill(title, text_wrap_len)
         x = np.array(np.array(param_values[plot_param])[mask])
+        rotation=0
         if isinstance(x[0], list):
             x = convert_nn_layers_parameter_list(x)
             ax[i].xaxis.set_tick_params(rotation=90)
@@ -324,24 +432,32 @@ def plot_grid_search_training_times(gs_results, PLOT_PREFIX, unused_params_value
             x = convert_boosting_base_estimator_parameters_list(x)
             ax[i].xaxis.set_tick_params(rotation=90)
 
-        y_1 = np.array(fit_time_means)[mask]
-        e_1 = np.array(fit_time_stds)[mask]
-        y_2 = np.array(score_time_means)[mask]
-        e_2 = np.array(score_time_stds)[mask]
-        ax[i].errorbar(x, y_1, e_1, linestyle='--', marker='o', label='fit time')
-        ax[i].errorbar(x, y_2, e_2, linestyle='-', marker='^',label='score time' )
+        train_time_mean = np.array(fit_time_means)[mask]
+        train_time_std = np.array(fit_time_stds)[mask]
+        predict_time_mean = np.array(score_time_means)[mask]
+        predict_time_std = np.array(score_time_stds)[mask]
+        # ax[i].errorbar(x, train_time_mean, train_time_std, linestyle='--', marker='o', label='fit time')
+        # ax[i].errorbar(x, predict_time_mean, predict_time_std, linestyle='-', marker='^',label='score time' )
+
+        ax[i].plot(x, train_time_mean, label="Training Time", marker=".")
+        ax[i].fill_between(x, train_time_mean - train_time_std, train_time_mean + train_time_std, alpha=0.2, lw=2)
+        ax[i].plot(x, predict_time_mean, label="Prediction Time", marker=".")
+        ax[i].fill_between(x, predict_time_mean - predict_time_std, predict_time_mean + predict_time_std, alpha=0.2, lw=2)
+
+
         ax[i].set_xlabel(plot_param.upper())
         ax[i].legend(loc="upper right")
         ax[i].yaxis.set_tick_params(labelbottom=True)
         ax[i].set_title(title)
         ax[i].grid(True)
-        ax[i].xaxis.set_ticks(x[::tick_spacing])
-        # plt.setp(ax[i].get_xticklabels(), rotation=rotation)
+        if tick_spacing is not None:
+            ax[i].xaxis.set_ticks(x[::tick_spacing[i]])
+        plt.setp(ax[i].get_xticklabels(), rotation=rotation)
 
     param_string = ""
     for param in param_names:
         param_string += ("_" + param)
-    save_plot_name = PLOT_PREFIX + "GS_Times" + param_string + ".png"
+    save_plot_name = PLOT_SAVE_LOCATION + DATASET.replace(" ", "_") + "_" + ALGO + "_" + "GS_Times" + param_string + ".png"
     print("Plot saved as: ", save_plot_name)
     plt.savefig(save_plot_name, bbox_inches="tight")
 
