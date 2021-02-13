@@ -116,12 +116,12 @@ def plot_learning_curve(train_scores, test_scores, train_sizes, title,  ylim=Non
                  label="Cross-validation score")
     plt.legend(loc="best")
 
-    plt.title(title)
+    plt.title(title, fontsize=14, fontweight='bold')
     if ylim is not None:
         plt.ylim(*ylim)
     plt.xticks(train_sizes)
-    plt.xlabel("Training examples")
-    plt.ylabel("Score: Accuracy")
+    plt.xlabel("Training examples", fontsize=14)
+    plt.ylabel("Score: Accuracy", fontsize=14)
 
     if save_fig_name is not None:
         plt.savefig(save_fig_name)
@@ -166,9 +166,9 @@ def plot_scalability_curve(fit_times, train_sizes, title, save_fig_name=None, sh
     axes.plot(train_sizes, fit_times_mean, 'o-')
     axes.fill_between(train_sizes, fit_times_mean - fit_times_std,
                          fit_times_mean + fit_times_std, alpha=0.1)
-    axes.set_xlabel("Training examples")
-    axes.set_ylabel("fit_times")
-    axes.set_title(title)
+    axes.set_xlabel("Training examples", fontsize=14)
+    axes.set_ylabel("fit_times", fontsize=14)
+    axes.set_title(title, fontsize=14, fontweight='bold')
 
     if save_fig_name is not None:
         plt.savefig(save_fig_name)
@@ -208,9 +208,9 @@ def plot_performance_curve(test_scores, fit_times, title, ylim=None, save_fig_na
     axes.plot(fit_times_mean, test_scores_mean, 'o-')
     axes.fill_between(fit_times_mean, test_scores_mean - test_scores_std,
                          test_scores_mean + test_scores_std, alpha=0.1)
-    axes.set_xlabel("fit_times")
-    axes.set_ylabel("Score")
-    axes.set_title(title)
+    axes.set_xlabel("fit_times", fontsize=14)
+    axes.set_ylabel("Score", fontsize=14)
+    axes.set_title(title, fontsize=14, fontweight='bold')
     if ylim is not None:
         axes.set_ylim(*ylim)
 
@@ -249,9 +249,9 @@ def plot_validation_curve(train_scores_mean, train_scores_std, test_scores_mean,
     """
 
     plt.rcParams["figure.figsize"] = (15, 10)
-    plt.title(title)
-    plt.xlabel(param_name)
-    plt.ylabel("Score: {}".format(scoring))
+    plt.title(title, fontsize=14, fontweight='bold')
+    plt.xlabel(param_name, fontsize=14)
+    plt.ylabel("Score: {}".format(scoring), fontsize=14)
     if ylim is not None:
         plt.ylim(*ylim)
     plt.plot(param_range, train_scores_mean, label="Training score",
