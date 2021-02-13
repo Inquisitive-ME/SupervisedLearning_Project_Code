@@ -45,7 +45,6 @@ def generate_noisy_nonlinear_dataset_with_non_noisy_labels():
                                n_informative=n_informative, n_classes=2, n_clusters_per_class=n_clusters_per_class,
                                flip_y=0.0, hypercube=hypercube, random_state=random_state, class_sep=2, shuffle=True)
     x = np.apply_along_axis(lambda x: 2 ** x, 0, x)
-    x = x / x.max(axis=0)
 
     return x, test_add_noise(y, 0.2, random_state), y
 
@@ -54,12 +53,20 @@ def get_noisy_nonlinear():
     X2, Y2 = generate_noisy_nonlinear_dataset()
 
     X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X2, Y2, test_size=0.2, random_state=42)
+
+    X_train = X_train / X_train.max(axis=0)
+    y_train = y_train / X_train.max(axis=0)
+
     return X_train, X_test, y_train, y_test
 
 def get_noisy_nonlinear_with_non_noisy_labels():
     X2, Y_noise, Y2 = generate_noisy_nonlinear_dataset_with_non_noisy_labels()
 
     X_train, X_test, y_train, y_test, indices_train, indices_test = sklearn.model_selection.train_test_split(X2, Y_noise, [i for i in range(len(Y_noise))], test_size=0.2, random_state=42)
+
+    X_train = X_train / X_train.max(axis=0)
+    y_train = y_train / X_train.max(axis=0)
+
     return X_train, X_test, y_train, y_test, Y2[indices_test]
 
 def generate_large_num_features_dataset():
