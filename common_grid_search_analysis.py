@@ -4,7 +4,9 @@ import matplotlib.pyplot as plt
 import textwrap
 from sklearn.tree import DecisionTreeClassifier as DecisionTreeClassifier
 
-
+title_fontsize = 24
+fontsize = 24
+legend_fontsize = 18
 def convert_nn_layers_parameter(hidden_layer_sizes):
     temp = ""
     for i in hidden_layer_sizes:
@@ -30,7 +32,7 @@ def convert_boosting_base_estimator_parameters_list(base_estimator_parameters_li
         converted_parameters.append(convert_boosting_base_estimator(i))
     return converted_parameters
 
-def plot_grid_search_model_complexity_1param(gs_results, plot_param, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=1, text_wrap_len=30, ylim=None):
+def plot_grid_search_model_complexity_1param(gs_results, plot_param, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=1, text_wrap_len=30, ylim=None, figsize=(15,10)):
     """
     References:
     https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
@@ -71,9 +73,11 @@ def plot_grid_search_model_complexity_1param(gs_results, plot_param, PLOT_SAVE_L
             param_values[p].append(params[p])
 
     ## Ploting results
-    fig, ax = plt.subplots(1, 1, sharex='none', sharey='all',figsize=(20,10))
-    fig.suptitle('{} Model Complexity Curve for Parameter {}\n Data Set: {}'.format(ALGO, plot_param, DATASET), fontsize=14, fontweight='bold')
-    fig.text(0.04, 0.5, 'Mean Score (Accuracy)', va='center', rotation='vertical', fontsize=14)
+    fig, ax = plt.subplots(1, 1, sharex='none', sharey='all',figsize=figsize)
+    plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+
+    fig.suptitle('{} Model Complexity Curve for Parameter {}\n Data Set: {}'.format(ALGO, plot_param, DATASET), fontsize=title_fontsize, fontweight='bold')
+    fig.text(-0.02, 0.5, 'Mean Score (Accuracy)', va='center', rotation='vertical', fontsize=fontsize)
 
     i=0
     mask = np.ones(np.array(train_scores_mean).shape, dtype=bool)
@@ -123,13 +127,16 @@ def plot_grid_search_model_complexity_1param(gs_results, plot_param, PLOT_SAVE_L
                        plot_train_scores + plot_train_std, alpha=0.2,
                        color="darkorange", lw=2)
 
+    plt.xticks(fontsize=fontsize)
+    plt.yticks(fontsize=fontsize)
+
     ax.xaxis.set_ticks(x[::tick_spacing])
-    ax.set_xlabel(plot_param.upper(), fontsize=14)
+    ax.set_xlabel(plot_param.upper(), fontsize=fontsize)
     if ylim is not None:
         ax.set_ylim(*ylim)
-    ax.legend(loc="upper left")
+    ax.legend(loc="upper left", fontsize=legend_fontsize)
     ax.yaxis.set_tick_params(labelbottom=True)
-    ax.set_title(title)
+    ax.set_title(title, fontsize=fontsize)
     ax.grid(True)
 
     param_string = ""
@@ -138,6 +145,7 @@ def plot_grid_search_model_complexity_1param(gs_results, plot_param, PLOT_SAVE_L
     save_plot_name = PLOT_SAVE_LOCATION + DATASET.replace(" ", "_") + "_" + ALGO + "_" + "GS_ModelComplexity" + param_string + ".png"
     print("Plot saved as: ", save_plot_name)
     #plt.savefig(save_plot_name, bbox_inches="tight")
+    plt.tight_layout()
     plt.show()
 
 
@@ -254,7 +262,7 @@ def plot_grid_search_model_complexity(gs_results, PLOT_SAVE_LOCATION, ALGO, DATA
     plt.savefig(save_plot_name, bbox_inches="tight")
 
 
-def plot_grid_search_training_times_1param(gs_results, plot_param, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=None, text_wrap_len=30, ylim=None):
+def plot_grid_search_training_times_1param(gs_results, plot_param, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=None, text_wrap_len=30, ylim=None, figsize=(15,10)):
     """
     References:
     https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
@@ -295,9 +303,11 @@ def plot_grid_search_training_times_1param(gs_results, plot_param, PLOT_SAVE_LOC
             param_values[p].append(params[p])
 
     ## Ploting results
-    fig, ax = plt.subplots(1, 1,sharex='none', sharey='all',figsize=(20,10))
-    fig.suptitle('{} Training and Prediction time for Parameter {}\n Data Set: {}'.format(ALGO, plot_param, DATASET), fontsize=14, fontweight='bold')
-    fig.text(0.04, 0.5, 'Mean Time (s)', va='center', rotation='vertical', fontsize=14)
+    fig, ax = plt.subplots(1, 1,sharex='none', sharey='all',figsize=figsize)
+    plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+
+    fig.suptitle('{} Training and Prediction time for Parameter {}\n Data Set: {}'.format(ALGO, plot_param, DATASET), fontsize=title_fontsize, fontweight='bold')
+    fig.text(-0.02, 0.5, 'Mean Time (s)', va='center', rotation='vertical', fontsize=fontsize)
 
     mask = np.ones(np.array(fit_time_means).shape, dtype=bool)
     title = ""
@@ -340,10 +350,13 @@ def plot_grid_search_training_times_1param(gs_results, plot_param, PLOT_SAVE_LOC
     ax.plot(x, predict_time_mean, label="Prediction Time", marker=".")
     ax.fill_between(x, predict_time_mean - predict_time_std, predict_time_mean + predict_time_std, alpha=0.2, lw=2)
 
-    ax.set_xlabel(plot_param.upper(), fontsize=14)
-    ax.legend(loc="upper right")
+    plt.xticks(fontsize=fontsize)
+    plt.yticks(fontsize=fontsize)
+
+    ax.set_xlabel(plot_param.upper(), fontsize=fontsize)
+    ax.legend(loc="upper right", fontsize=legend_fontsize)
     ax.yaxis.set_tick_params(labelbottom=True)
-    ax.set_title(title, fontsize=14)
+    ax.set_title(title, fontsize=fontsize)
     ax.grid(True)
     if tick_spacing is not None:
         ax.xaxis.set_ticks(x[::tick_spacing])
@@ -357,6 +370,8 @@ def plot_grid_search_training_times_1param(gs_results, plot_param, PLOT_SAVE_LOC
     save_plot_name = PLOT_SAVE_LOCATION + DATASET.replace(" ", "_") + "_" + ALGO + "_" + "GS_Times" + param_string + ".png"
     print("Plot saved as: ", save_plot_name)
     plt.savefig(save_plot_name, bbox_inches="tight")
+    plt.tight_layout()
+    plt.show()
 
 
 def plot_grid_search_training_times(gs_results, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=None, text_wrap_len=30, ylim=None):

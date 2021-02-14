@@ -8,6 +8,9 @@ from sklearn import tree
 from sklearn.svm import SVC
 from textwrap import wrap
 
+title_fontsize = 24
+fontsize = 24
+legend_fontsize = 18
 
 def get_cv():
     return ShuffleSplit(n_splits=10, test_size=0.2, random_state=0)
@@ -70,7 +73,7 @@ def perform_learning_curve(estimator, X, y, scoring, cv=None, n_jobs=None, train
     return train_sizes, train_scores, test_scores, fit_times, score_times
 
 
-def plot_learning_curve(train_scores, test_scores, train_sizes, title,  ylim=None, save_fig_name=None, show_plot=True):
+def plot_learning_curve(train_scores, test_scores, train_sizes, title,  ylim=None, save_fig_name=None, show_plot=True, figsize=(15,10), legend_loc='best'):
     """
     Reference: https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html#sphx-glr-auto-examples-model-selection-plot-learning-curve-py
 
@@ -102,8 +105,11 @@ def plot_learning_curve(train_scores, test_scores, train_sizes, title,  ylim=Non
     test_scores_std = np.std(test_scores, axis=1)
 
     # Plot learning curve
-    plt.rcParams["figure.figsize"] = (15, 10)
+    plt.rcParams["figure.figsize"] = figsize
     plt.grid()
+    plt.xticks(fontsize=fontsize)
+    plt.yticks(fontsize=fontsize)
+
     plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
                          train_scores_mean + train_scores_std, alpha=0.1,
                          color="r")
@@ -114,23 +120,24 @@ def plot_learning_curve(train_scores, test_scores, train_sizes, title,  ylim=Non
                  label="Training score")
     plt.plot(train_sizes, test_scores_mean, 'o-', color="g",
                  label="Cross-validation score")
-    plt.legend(loc="best")
+    plt.legend(loc=legend_loc, fontsize=legend_fontsize)
 
-    plt.title(title, fontsize=14, fontweight='bold')
+    plt.title(title, fontsize=title_fontsize, fontweight='bold')
     if ylim is not None:
         plt.ylim(*ylim)
     plt.xticks(train_sizes)
-    plt.xlabel("Training examples", fontsize=14)
-    plt.ylabel("Score: Accuracy", fontsize=14)
+    plt.xlabel("Training examples", fontsize=fontsize, fontweight='bold')
+    plt.ylabel("Score: Accuracy", fontsize=fontsize, fontweight='bold')
 
     if save_fig_name is not None:
         plt.savefig(save_fig_name)
 
     if show_plot:
+        plt.tight_layout()
         plt.show()
 
 
-def plot_scalability_curve(fit_times, score_times, train_sizes, title, save_fig_name=None, show_plot=True):
+def plot_scalability_curve(fit_times, score_times, train_sizes, title, save_fig_name=None, show_plot=True, ylim=None, figsize=(15,10), legend_loc='best'):
     """
     Reference: https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html#sphx-glr-auto-examples-model-selection-plot-learning-curve-py
 
@@ -154,8 +161,11 @@ def plot_scalability_curve(fit_times, score_times, train_sizes, title, save_fig_
         (default: np.linspace(0.1, 1.0, 5))
     """
 
-    fig = plt.figure(figsize=(15, 10))
+    fig = plt.figure(figsize=figsize)
     axes = fig.add_subplot(111)
+    plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+    plt.xticks(fontsize=fontsize)
+    plt.yticks(fontsize=fontsize)
     axes.grid()
 
     fit_times_mean = np.mean(fit_times, axis=1)
@@ -169,23 +179,27 @@ def plot_scalability_curve(fit_times, score_times, train_sizes, title, save_fig_
     axes.fill_between(train_sizes, fit_times_mean - fit_times_std,
                          fit_times_mean + fit_times_std, alpha=0.1)
 
-    axes.plot(train_sizes, score_times_mean, 'o-', label="score time")
+    axes.plot(train_sizes, score_times_mean, 'o-', label="predict time")
     axes.fill_between(train_sizes, score_times_mean - score_times_std,
                          score_times_mean + score_times_std, alpha=0.1)
 
-    axes.set_xlabel("Training examples", fontsize=14)
-    axes.set_ylabel("time (s)", fontsize=14)
-    axes.set_title(title, fontsize=14, fontweight='bold')
-    axes.legend()
+    if ylim is not None:
+        axes.set_ylim(*ylim)
+
+    axes.set_xlabel("Training examples", fontsize=fontsize, fontweight='bold')
+    axes.set_ylabel("time (s)", fontsize=fontsize, fontweight='bold')
+    axes.set_title(title, fontsize=title_fontsize, fontweight='bold')
+    axes.legend(loc=legend_loc, fontsize=legend_fontsize)
 
     if save_fig_name is not None:
         plt.savefig(save_fig_name)
 
     if show_plot:
+        plt.tight_layout()
         plt.show()
 
 
-def plot_performance_curve(test_scores, fit_times, title, ylim=None, save_fig_name=None, show_plot=True):
+def plot_performance_curve(test_scores, fit_times, title, ylim=None, save_fig_name=None, show_plot=True, figsize=(15,10)):
     """
     Reference: https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html#sphx-glr-auto-examples-model-selection-plot-learning-curve-py
 
@@ -204,9 +218,11 @@ def plot_performance_curve(test_scores, fit_times, title, ylim=None, save_fig_na
         to be big enough to contain at least one sample from each class.
         (default: np.linspace(0.1, 1.0, 5))
     """
-    fig = plt.figure(figsize=(15, 10))
+    fig = plt.figure(figsize=figsize)
     axes = fig.add_subplot(111)
     axes.grid()
+    plt.xticks(fontsize=fontsize)
+    plt.yticks(fontsize=fontsize)
 
     test_scores_mean = np.mean(test_scores, axis=1)
     test_scores_std = np.std(test_scores, axis=1)
@@ -216,8 +232,8 @@ def plot_performance_curve(test_scores, fit_times, title, ylim=None, save_fig_na
     axes.plot(fit_times_mean, test_scores_mean, 'o-')
     axes.fill_between(fit_times_mean, test_scores_mean - test_scores_std,
                          test_scores_mean + test_scores_std, alpha=0.1)
-    axes.set_xlabel("fit_times", fontsize=14)
-    axes.set_ylabel("Score", fontsize=14)
+    axes.set_xlabel("fit_times", fontsize=14, fontweight='bold')
+    axes.set_ylabel("Score", fontsize=14, fontweight='bold')
     axes.set_title(title, fontsize=14, fontweight='bold')
     if ylim is not None:
         axes.set_ylim(*ylim)
@@ -226,6 +242,7 @@ def plot_performance_curve(test_scores, fit_times, title, ylim=None, save_fig_na
         plt.savefig(save_fig_name)
 
     if show_plot:
+        plt.tight_layout()
         plt.show()
 
 
@@ -240,7 +257,7 @@ def perform_validation_curve(estimator, X, y, param_name, param_range, scoring, 
     return train_scores_mean, train_scores_std, test_scores_mean, test_scores_std
 
 
-def plot_validation_curve(train_scores_mean, train_scores_std, test_scores_mean, test_scores_std, param_name, param_range, title="Validation Curve", scoring='accuracy', ylim=None, tick_spacing=1, rotation='horizontal'):
+def plot_validation_curve(train_scores_mean, train_scores_std, test_scores_mean, test_scores_std, param_name, param_range, title="Validation Curve", scoring='accuracy', ylim=None, tick_spacing=1, rotation='horizontal', figsize=(15,10), legend_loc='best'):
     """
     Reference: https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html#sphx-glr-auto-examples-model-selection-plot-validation-curve-py
     :param estimator:
@@ -256,12 +273,15 @@ def plot_validation_curve(train_scores_mean, train_scores_std, test_scores_mean,
     :return:
     """
 
-    plt.rcParams["figure.figsize"] = (15, 10)
-    plt.title(title, fontsize=14, fontweight='bold')
-    plt.xlabel(param_name, fontsize=14)
-    plt.ylabel("Score: {}".format(scoring), fontsize=14)
+    plt.rcParams["figure.figsize"] = figsize
+    plt.title(title, fontsize=title_fontsize, fontweight='bold')
+    plt.xlabel(param_name, fontsize=fontsize, fontweight='bold')
+    plt.ylabel("Score: {}".format(scoring), fontsize=fontsize, fontweight='bold')
     if ylim is not None:
         plt.ylim(*ylim)
+    plt.xticks(fontsize=fontsize)
+    plt.yticks(fontsize=fontsize)
+
     plt.plot(param_range, train_scores_mean, label="Training score",
                  color="darkorange", marker=".")
     plt.fill_between(param_range, train_scores_mean - train_scores_std,
@@ -274,7 +294,8 @@ def plot_validation_curve(train_scores_mean, train_scores_std, test_scores_mean,
                      color="navy", lw=2)
     plt.xticks(param_range[::tick_spacing], rotation=rotation)
     plt.grid()
-    plt.legend(loc="best")
+    plt.legend(fontsize=legend_fontsize, loc=legend_loc)
+    plt.tight_layout()
     plt.show()
 
 
