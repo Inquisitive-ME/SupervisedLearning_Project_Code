@@ -231,10 +231,10 @@ def plot_grid_search_model_complexity(gs_results, PLOT_SAVE_LOCATION, ALGO, DATA
         rotation=0
         if isinstance(x[0], list):
             x = convert_nn_layers_parameter_list(x)
-            ax[i].xaxis.set_tick_params(rotation=90)
+            rotation = 90
         elif isinstance(x[0], DecisionTreeClassifier):
             x = convert_boosting_base_estimator_parameters_list(x)
-            ax[i].xaxis.set_tick_params(rotation=90)
+            rotation = 90
 
         ax[i].plot(x, plot_test_scores, label="Cross-validation Score",
                  color="navy", marker=".")
