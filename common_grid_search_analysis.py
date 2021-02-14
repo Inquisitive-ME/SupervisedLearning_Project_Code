@@ -191,8 +191,12 @@ def plot_grid_search_model_complexity(gs_results, PLOT_SAVE_LOCATION, ALGO, DATA
 
     ## Ploting results
     fig, ax = plt.subplots(1,len(param_names),sharex='none', sharey='all',figsize=(20,10))
-    fig.suptitle('{} Model Complexity Curves per Parameter\n Data Set: {}'.format(ALGO, DATASET), fontsize=14, fontweight='bold')
-    fig.text(0.04, 0.5, 'Mean Score (Accuracy)', va='center', rotation='vertical', fontsize=14)
+    plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+    fig.suptitle('{} Model Complexity Curves per Parameter\n Data Set: {}'.format(ALGO, DATASET), fontsize=title_fontsize, fontweight='bold')
+    fig.text(-0.02, 0.5, 'Mean Score (Accuracy)', va='center', rotation='vertical', fontsize=fontsize)
+
+    plt.xticks(fontsize=fontsize)
+    plt.yticks(fontsize=fontsize)
 
     for i, plot_param in enumerate(param_names):
         mask = np.ones(np.array(train_scores_mean).shape, dtype=bool)
@@ -245,13 +249,13 @@ def plot_grid_search_model_complexity(gs_results, PLOT_SAVE_LOCATION, ALGO, DATA
 
         if tick_spacing is not None:
             ax[i].xaxis.set_ticks(x[::tick_spacing[i]])
-        plt.setp(ax[i].get_xticklabels(), rotation=rotation)
-        ax[i].set_xlabel(plot_param.upper(), fontsize=14)
+        plt.setp(ax[i].get_xticklabels(), rotation=rotation, fontsize=fontsize)
+        ax[i].set_xlabel(plot_param.upper(), fontsize=fontsize)
         if ylim is not None:
             ax[i].set_ylim(*ylim)
-        ax[i].legend(loc="upper left")
+        ax[i].legend(loc="upper left", fontsize=legend_fontsize)
         ax[i].yaxis.set_tick_params(labelbottom=True)
-        ax[i].set_title(title)
+        ax[i].set_title(title, fontsize=fontsize)
         ax[i].grid(True)
 
     param_string = ""
@@ -260,6 +264,8 @@ def plot_grid_search_model_complexity(gs_results, PLOT_SAVE_LOCATION, ALGO, DATA
     save_plot_name = PLOT_SAVE_LOCATION + DATASET.replace(" ", "_") + "_" + ALGO + "_" + "GS_ModelComplexity" + param_string + ".png"
     print("Plot saved as: ", save_plot_name)
     plt.savefig(save_plot_name, bbox_inches="tight")
+    plt.tight_layout()
+    plt.show()
 
 
 def plot_grid_search_training_times_1param(gs_results, plot_param, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=None, text_wrap_len=30, ylim=None, figsize=(15,10)):
