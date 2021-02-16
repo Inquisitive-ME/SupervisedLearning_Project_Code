@@ -7,6 +7,8 @@ from sklearn.tree import DecisionTreeClassifier as DecisionTreeClassifier
 title_fontsize = 24
 fontsize = 24
 legend_fontsize = 18
+default_figure_size = (15,8)
+
 def convert_nn_layers_parameter(hidden_layer_sizes):
     temp = ""
     for i in hidden_layer_sizes:
@@ -32,7 +34,7 @@ def convert_boosting_base_estimator_parameters_list(base_estimator_parameters_li
         converted_parameters.append(convert_boosting_base_estimator(i))
     return converted_parameters
 
-def plot_grid_search_model_complexity_1param(gs_results, plot_param, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=1, text_wrap_len=30, ylim=None, figsize=(15,10)):
+def plot_grid_search_model_complexity_1param(gs_results, plot_param, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=1, text_wrap_len=30, ylim=None, figsize=default_figure_size, legend_loc='best'):
     """
     References:
     https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
@@ -134,7 +136,7 @@ def plot_grid_search_model_complexity_1param(gs_results, plot_param, PLOT_SAVE_L
     ax.set_xlabel(plot_param.upper(), fontsize=fontsize)
     if ylim is not None:
         ax.set_ylim(*ylim)
-    ax.legend(loc="upper left", fontsize=legend_fontsize)
+    ax.legend(loc=legend_loc, fontsize=legend_fontsize)
     ax.yaxis.set_tick_params(labelbottom=True)
     ax.set_title(title, fontsize=fontsize)
     ax.grid(True)
@@ -190,7 +192,7 @@ def plot_grid_search_model_complexity(gs_results, PLOT_SAVE_LOCATION, ALGO, DATA
             param_values[p].append(params[p])
 
     ## Ploting results
-    fig, ax = plt.subplots(1,len(param_names),sharex='none', sharey='all',figsize=(20,10))
+    fig, ax = plt.subplots(1,len(param_names),sharex='none', sharey='all',figsize=default_figure_size)
     plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
     fig.suptitle('{} Model Complexity Curves per Parameter\n Data Set: {}'.format(ALGO, DATASET), fontsize=title_fontsize, fontweight='bold')
     fig.text(-0.02, 0.5, 'Mean Score (Accuracy)', va='center', rotation='vertical', fontsize=fontsize)
@@ -250,6 +252,7 @@ def plot_grid_search_model_complexity(gs_results, PLOT_SAVE_LOCATION, ALGO, DATA
         if tick_spacing is not None:
             ax[i].xaxis.set_ticks(x[::tick_spacing[i]])
         plt.setp(ax[i].get_xticklabels(), rotation=rotation, fontsize=fontsize)
+        plt.setp(ax[i].get_yticklabels(), fontsize=fontsize)
         ax[i].set_xlabel(plot_param.upper(), fontsize=fontsize)
         if ylim is not None:
             ax[i].set_ylim(*ylim)
@@ -268,7 +271,7 @@ def plot_grid_search_model_complexity(gs_results, PLOT_SAVE_LOCATION, ALGO, DATA
     plt.show()
 
 
-def plot_grid_search_training_times_1param(gs_results, plot_param, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=None, text_wrap_len=30, ylim=None, figsize=(15,10)):
+def plot_grid_search_training_times_1param(gs_results, plot_param, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=None, text_wrap_len=30, ylim=None, figsize=default_figure_size):
     """
     References:
     https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
@@ -421,7 +424,7 @@ def plot_grid_search_training_times(gs_results, PLOT_SAVE_LOCATION, ALGO, DATASE
             param_values[p].append(params[p])
 
     ## Ploting results
-    fig, ax = plt.subplots(1,len(param_names),sharex='none', sharey='all',figsize=(20,10))
+    fig, ax = plt.subplots(1,len(param_names),sharex='none', sharey='all',figsize=default_figure_size)
     fig.suptitle('{} Training and Prediction time per parameter\n Data Set: {}'.format(ALGO, DATASET), fontsize=14, fontweight='bold')
     fig.text(0.04, 0.5, 'Mean Time (s)', va='center', rotation='vertical', fontsize=14)
 
@@ -548,7 +551,7 @@ def plot_grid_search_model_complexity_and_training(gs_results, PLOT_PREFIX, unus
         score_time_stds.append(score_std)
 
     ## Ploting results
-    fig, ax = plt.subplots(2,len(param_names),sharex='none', sharey='row',figsize=(20,10))
+    fig, ax = plt.subplots(2,len(param_names),sharex='none', sharey='row',figsize=default_figure_size)
     fig.suptitle('Accuracy and Time per parameter')
     fig.text(0.04, 0.5, 'MEAN SCORE', va='center', rotation='vertical')
 
@@ -687,7 +690,7 @@ def plot_grid_search_2_params(gs_results, name_param_1, name_param_2, score_limi
     #     parameter_1_matrix[i] = [p for p,score in sorted(zip(parameter_1_matrix[i], scores_matrix[i]))]
 
     # Plot Grid search scores
-    plt.rcParams['figure.figsize'] = [12, 8]
+    plt.rcParams['figure.figsize'] = default_figure_size
     plt.rcParams['figure.dpi'] = 100 # 200 e.g. is really fine, but slower
     _, ax = plt.subplots(1,1)
 

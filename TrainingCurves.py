@@ -11,6 +11,7 @@ from textwrap import wrap
 title_fontsize = 24
 fontsize = 24
 legend_fontsize = 18
+default_figure_size = (15, 8)
 
 def get_cv():
     return ShuffleSplit(n_splits=10, test_size=0.2, random_state=0)
@@ -73,7 +74,7 @@ def perform_learning_curve(estimator, X, y, scoring, cv=None, n_jobs=None, train
     return train_sizes, train_scores, test_scores, fit_times, score_times
 
 
-def plot_learning_curve(train_scores, test_scores, train_sizes, title,  ylim=None, save_fig_name=None, show_plot=True, figsize=(15,10), legend_loc='best'):
+def plot_learning_curve(train_scores, test_scores, train_sizes, title,  ylim=None, save_fig_name=None, show_plot=True, figsize=default_figure_size, legend_loc='best'):
     """
     Reference: https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html#sphx-glr-auto-examples-model-selection-plot-learning-curve-py
 
@@ -137,7 +138,7 @@ def plot_learning_curve(train_scores, test_scores, train_sizes, title,  ylim=Non
         plt.show()
 
 
-def plot_scalability_curve(fit_times, score_times, train_sizes, title, save_fig_name=None, show_plot=True, ylim=None, figsize=(15,10), legend_loc='best'):
+def plot_scalability_curve(fit_times, score_times, train_sizes, title, save_fig_name=None, show_plot=True, ylim=None, figsize=default_figure_size, legend_loc='best'):
     """
     Reference: https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html#sphx-glr-auto-examples-model-selection-plot-learning-curve-py
 
@@ -199,7 +200,7 @@ def plot_scalability_curve(fit_times, score_times, train_sizes, title, save_fig_
         plt.show()
 
 
-def plot_performance_curve(test_scores, fit_times, title, ylim=None, save_fig_name=None, show_plot=True, figsize=(15,10)):
+def plot_performance_curve(test_scores, fit_times, title, ylim=None, save_fig_name=None, show_plot=True, figsize=default_figure_size):
     """
     Reference: https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html#sphx-glr-auto-examples-model-selection-plot-learning-curve-py
 
@@ -257,7 +258,7 @@ def perform_validation_curve(estimator, X, y, param_name, param_range, scoring, 
     return train_scores_mean, train_scores_std, test_scores_mean, test_scores_std
 
 
-def plot_validation_curve(train_scores_mean, train_scores_std, test_scores_mean, test_scores_std, param_name, param_range, title="Validation Curve", scoring='accuracy', ylim=None, tick_spacing=1, rotation='horizontal', figsize=(15,10), legend_loc='best'):
+def plot_validation_curve(train_scores_mean, train_scores_std, test_scores_mean, test_scores_std, param_name, param_range, title="Validation Curve", scoring='accuracy', ylim=None, tick_spacing=1, rotation='horizontal', figsize=default_figure_size, legend_loc='best'):
     """
     Reference: https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html#sphx-glr-auto-examples-model-selection-plot-validation-curve-py
     :param estimator:
@@ -281,6 +282,7 @@ def plot_validation_curve(train_scores_mean, train_scores_std, test_scores_mean,
         plt.ylim(*ylim)
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
+    plt.margins(x=0, y=0)
 
     plt.plot(param_range, train_scores_mean, label="Training score",
                  color="darkorange", marker=".")
