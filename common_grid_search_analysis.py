@@ -30,7 +30,7 @@ def convert_boosting_base_estimator_ccp_alpha(base_estimator_parameter: Decision
     return " ccp_alpha: " + str(base_estimator_parameter.ccp_alpha)
 
 def convert_boosting_base_estimator_features(base_estimator_parameter: DecisionTreeClassifier) -> str:
-    return " max_features: " + str(base_estimator_parameter.max_features_)
+    return " max_features: " + str(base_estimator_parameter.max_features)
 
 def convert_boosting_base_estimator(base_estimator_parameter: DecisionTreeClassifier, param) -> str:
     if param == "max_depth":
@@ -39,6 +39,8 @@ def convert_boosting_base_estimator(base_estimator_parameter: DecisionTreeClassi
         return convert_boosting_base_estimator_ccp_alpha(base_estimator_parameter)
     elif param == "max_features":
         return convert_boosting_base_estimator_features(base_estimator_parameter)
+    elif param == "max_depth_features":
+        return "feats: " + str(base_estimator_parameter.max_features) + " depth: " + str(base_estimator_parameter.max_depth)
     else:
         return "ccp_alpha: " + str(base_estimator_parameter.ccp_alpha) + " max_depth: " + str(base_estimator_parameter.max_depth)
 
