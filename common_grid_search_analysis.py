@@ -23,18 +23,32 @@ def convert_nn_layers_parameter_list(hidden_layer_sizes_list):
         string_hidden_layer_size.append(convert_nn_layers_parameter(i))
     return string_hidden_layer_size
 
+def convert_boosting_base_estimator_depth(base_estimator_parameter: DecisionTreeClassifier) -> str:
+    return " max_depth: " + str(base_estimator_parameter.max_depth)
 
-def convert_boosting_base_estimator(base_estimator_parameter: DecisionTreeClassifier) -> str:
-    return "ccp_alpha: " + str(base_estimator_parameter.ccp_alpha) + " max_depth: " + str(base_estimator_parameter.max_depth)
+def convert_boosting_base_estimator_ccp_alpha(base_estimator_parameter: DecisionTreeClassifier) -> str:
+    return " ccp_alpha: " + str(base_estimator_parameter.ccp_alpha)
 
+def convert_boosting_base_estimator_features(base_estimator_parameter: DecisionTreeClassifier) -> str:
+    return " max_features: " + str(base_estimator_parameter.max_features_)
 
-def convert_boosting_base_estimator_parameters_list(base_estimator_parameters_list):
+def convert_boosting_base_estimator(base_estimator_parameter: DecisionTreeClassifier, param) -> str:
+    if param == "max_depth":
+        return convert_boosting_base_estimator_depth(base_estimator_parameter)
+    elif param == "ccp_alpha":
+        return convert_boosting_base_estimator_ccp_alpha(base_estimator_parameter)
+    elif param == "max_features":
+        return convert_boosting_base_estimator_features(base_estimator_parameter)
+    else:
+        return "ccp_alpha: " + str(base_estimator_parameter.ccp_alpha) + " max_depth: " + str(base_estimator_parameter.max_depth)
+
+def convert_boosting_base_estimator_parameters_list(base_estimator_parameters_list, param=""):
     converted_parameters = []
     for i in base_estimator_parameters_list:
-        converted_parameters.append(convert_boosting_base_estimator(i))
+        converted_parameters.append(convert_boosting_base_estimator(i, param))
     return converted_parameters
 
-def plot_grid_search_model_complexity_1param(gs_results, plot_param, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=1, text_wrap_len=30, ylim=None, figsize=default_figure_size, legend_loc='best'):
+def plot_grid_search_model_complexity_1param(gs_results, plot_param, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=1, text_wrap_len=30, ylim=None, figsize=default_figure_size, legend_loc='best', dt_param=""):
     """
     References:
     https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
@@ -88,7 +102,7 @@ def plot_grid_search_model_complexity_1param(gs_results, plot_param, PLOT_SAVE_L
         if isinstance(values[0], list):
             values = convert_nn_layers_parameter_list(values)
         elif isinstance(values[0], DecisionTreeClassifier):
-            values = convert_boosting_base_estimator_parameters_list(values)
+            values = convert_boosting_base_estimator_parameters_list(values, dt_param)
         if plot_param != best_param:
             if unused_params_value_dict is None or best_param not in unused_params_value_dict.keys():
                 best_param_value = gs_results.best_params_[best_param]
@@ -97,7 +111,7 @@ def plot_grid_search_model_complexity_1param(gs_results, plot_param, PLOT_SAVE_L
             if isinstance(best_param_value, list):
                 best_param_value = convert_nn_layers_parameter(best_param_value)
             elif isinstance(best_param_value, DecisionTreeClassifier):
-                best_param_value = convert_boosting_base_estimator(best_param_value)
+                best_param_value = convert_boosting_base_estimator(best_param_value, dt_param)
             mask = mask & np.where(np.array(values) == best_param_value,True,False)
             try:
                 title += (best_param + " = " + str(round(best_param_value, 4)) + " ")
@@ -115,7 +129,7 @@ def plot_grid_search_model_complexity_1param(gs_results, plot_param, PLOT_SAVE_L
         x = convert_nn_layers_parameter_list(x)
         ax.xaxis.set_tick_params(rotation=90)
     elif isinstance(x[0], DecisionTreeClassifier):
-        x = convert_boosting_base_estimator_parameters_list(x)
+        x = convert_boosting_base_estimator_parameters_list(x, dt_param)
         ax.xaxis.set_tick_params(rotation=90)
 
     ax.plot(x, plot_test_scores, label="Cross-validation Score",
@@ -151,7 +165,7 @@ def plot_grid_search_model_complexity_1param(gs_results, plot_param, PLOT_SAVE_L
     plt.show()
 
 
-def plot_grid_search_model_complexity(gs_results, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=None, text_wrap_len=30, ylim=None):
+def plot_grid_search_model_complexity(gs_results, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=None, text_wrap_len=30, ylim=None, dt_param=""):
     """
     References:
     https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
@@ -207,7 +221,7 @@ def plot_grid_search_model_complexity(gs_results, PLOT_SAVE_LOCATION, ALGO, DATA
             if isinstance(values[0], list):
                 values = convert_nn_layers_parameter_list(values)
             elif isinstance(values[0], DecisionTreeClassifier):
-                values = convert_boosting_base_estimator_parameters_list(values)
+                values = convert_boosting_base_estimator_parameters_list(values, dt_param)
             if plot_param != best_param:
                 if unused_params_value_dict is None or best_param not in unused_params_value_dict.keys():
                     best_param_value = gs_results.best_params_[best_param]
@@ -216,7 +230,7 @@ def plot_grid_search_model_complexity(gs_results, PLOT_SAVE_LOCATION, ALGO, DATA
                 if isinstance(best_param_value, list):
                     best_param_value = convert_nn_layers_parameter(best_param_value)
                 elif isinstance(best_param_value, DecisionTreeClassifier):
-                    best_param_value = convert_boosting_base_estimator(best_param_value)
+                    best_param_value = convert_boosting_base_estimator(best_param_value, dt_param)
                 mask = mask & np.where(np.array(values) == best_param_value,True,False)
                 try:
                     title += (best_param + " = " + str(round(best_param_value, 4)) + " ")
@@ -235,7 +249,7 @@ def plot_grid_search_model_complexity(gs_results, PLOT_SAVE_LOCATION, ALGO, DATA
             x = convert_nn_layers_parameter_list(x)
             rotation = 90
         elif isinstance(x[0], DecisionTreeClassifier):
-            x = convert_boosting_base_estimator_parameters_list(x)
+            x = convert_boosting_base_estimator_parameters_list(x, param=dt_param)
             rotation = 90
 
         ax[i].plot(x, plot_test_scores, label="Cross-validation Score",
@@ -271,7 +285,7 @@ def plot_grid_search_model_complexity(gs_results, PLOT_SAVE_LOCATION, ALGO, DATA
     plt.show()
 
 
-def plot_grid_search_training_times_1param(gs_results, plot_param, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=None, text_wrap_len=30, ylim=None, figsize=default_figure_size):
+def plot_grid_search_training_times_1param(gs_results, plot_param, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=None, text_wrap_len=30, ylim=None, figsize=default_figure_size, dt_param=""):
     """
     References:
     https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
@@ -324,7 +338,7 @@ def plot_grid_search_training_times_1param(gs_results, plot_param, PLOT_SAVE_LOC
         if isinstance(values[0], list):
             values = convert_nn_layers_parameter_list(values)
         elif isinstance(values[0], DecisionTreeClassifier):
-            values = convert_boosting_base_estimator_parameters_list(values)
+            values = convert_boosting_base_estimator_parameters_list(values, dt_param)
         if plot_param != best_param:
             if unused_params_value_dict is None or best_param not in unused_params_value_dict.keys():
                 best_param_value = gs_results.best_params_[best_param]
@@ -333,7 +347,7 @@ def plot_grid_search_training_times_1param(gs_results, plot_param, PLOT_SAVE_LOC
             if isinstance(best_param_value, list):
                 best_param_value = convert_nn_layers_parameter(best_param_value)
             elif isinstance(best_param_value, DecisionTreeClassifier):
-                best_param_value = convert_boosting_base_estimator(best_param_value)
+                best_param_value = convert_boosting_base_estimator(best_param_value, dt_param)
             mask = mask & np.where(np.array(values) == best_param_value,True,False)
             try:
                 title += (best_param + " = " + str(round(best_param_value, 4)) + " ")
@@ -344,10 +358,10 @@ def plot_grid_search_training_times_1param(gs_results, plot_param, PLOT_SAVE_LOC
     rotation=0
     if isinstance(x[0], list):
         x = convert_nn_layers_parameter_list(x)
-        ax.xaxis.set_tick_params(rotation=90)
+        rotation=90
     elif isinstance(x[0], DecisionTreeClassifier):
-        x = convert_boosting_base_estimator_parameters_list(x)
-        ax.xaxis.set_tick_params(rotation=90)
+        x = convert_boosting_base_estimator_parameters_list(x, dt_param)
+        rotation=90
 
     train_time_mean = np.array(fit_time_means)[mask]
     train_time_std = np.array(fit_time_stds)[mask]
@@ -383,7 +397,7 @@ def plot_grid_search_training_times_1param(gs_results, plot_param, PLOT_SAVE_LOC
     plt.show()
 
 
-def plot_grid_search_training_times(gs_results, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=None, text_wrap_len=30, ylim=None):
+def plot_grid_search_training_times(gs_results, PLOT_SAVE_LOCATION, ALGO, DATASET, unused_params_value_dict=None, tick_spacing=None, text_wrap_len=30, ylim=None, dt_param=""):
     """
     References:
     https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
@@ -435,7 +449,7 @@ def plot_grid_search_training_times(gs_results, PLOT_SAVE_LOCATION, ALGO, DATASE
             if isinstance(values[0], list):
                 values = convert_nn_layers_parameter_list(values)
             elif isinstance(values[0], DecisionTreeClassifier):
-                values = convert_boosting_base_estimator_parameters_list(values)
+                values = convert_boosting_base_estimator_parameters_list(values, dt_param)
             if plot_param != best_param:
                 if unused_params_value_dict is None or best_param not in unused_params_value_dict.keys():
                     best_param_value = gs_results.best_params_[best_param]
@@ -444,7 +458,7 @@ def plot_grid_search_training_times(gs_results, PLOT_SAVE_LOCATION, ALGO, DATASE
                 if isinstance(best_param_value, list):
                     best_param_value = convert_nn_layers_parameter(best_param_value)
                 elif isinstance(best_param_value, DecisionTreeClassifier):
-                    best_param_value = convert_boosting_base_estimator(best_param_value)
+                    best_param_value = convert_boosting_base_estimator(best_param_value, dt_param)
                 mask = mask & np.where(np.array(values) == best_param_value,True,False)
                 try:
                     title += (best_param + " = " + str(round(best_param_value, 4)) + " ")
@@ -455,10 +469,10 @@ def plot_grid_search_training_times(gs_results, PLOT_SAVE_LOCATION, ALGO, DATASE
         rotation=0
         if isinstance(x[0], list):
             x = convert_nn_layers_parameter_list(x)
-            ax[i].xaxis.set_tick_params(rotation=90)
+            rotation=90
         elif isinstance(x[0], DecisionTreeClassifier):
-            x = convert_boosting_base_estimator_parameters_list(x)
-            ax[i].xaxis.set_tick_params(rotation=90)
+            x = convert_boosting_base_estimator_parameters_list(x, dt_param)
+            rotation=90
 
         train_time_mean = np.array(fit_time_means)[mask]
         train_time_std = np.array(fit_time_stds)[mask]
@@ -491,7 +505,7 @@ def plot_grid_search_training_times(gs_results, PLOT_SAVE_LOCATION, ALGO, DATASE
     print("Plot saved as: ", save_plot_name)
     plt.savefig(save_plot_name, bbox_inches="tight")
 
-def plot_grid_search_model_complexity_and_training(gs_results, PLOT_PREFIX, unused_params_value_dict=None, tick_spacing=1):
+def plot_grid_search_model_complexity_and_training(gs_results, PLOT_PREFIX, unused_params_value_dict=None, tick_spacing=1, dt_param=""):
     """
     References:
     https://stackoverflow.com/questions/37161563/how-to-graph-grid-scores-from-gridsearchcv
@@ -562,7 +576,7 @@ def plot_grid_search_model_complexity_and_training(gs_results, PLOT_PREFIX, unus
             if isinstance(values[0], list):
                 values = convert_nn_layers_parameter_list(values)
             elif isinstance(values[0], DecisionTreeClassifier):
-                values = convert_boosting_base_estimator_parameters_list(values)
+                values = convert_boosting_base_estimator_parameters_list(values, dt_param)
             if plot_param != best_param:
                 if unused_params_value_dict is None or best_param not in unused_params_value_dict.keys():
                     best_param_value = gs_results.best_params_[best_param]
@@ -571,7 +585,7 @@ def plot_grid_search_model_complexity_and_training(gs_results, PLOT_PREFIX, unus
                 if isinstance(best_param_value, list):
                     best_param_value = convert_nn_layers_parameter(best_param_value)
                 elif isinstance(best_param_value, DecisionTreeClassifier):
-                    best_param_value = convert_boosting_base_estimator(best_param_value)
+                    best_param_value = convert_boosting_base_estimator(best_param_value, dt_param)
                 mask = mask & np.where(np.array(values) == best_param_value,True,False)
                 try:
                     title += (best_param + " = " + str(round(best_param_value, 4)) + " ")
@@ -586,7 +600,7 @@ def plot_grid_search_model_complexity_and_training(gs_results, PLOT_PREFIX, unus
             ax[0, i].xaxis.set_tick_params(rotation=90)
             ax[1, i].xaxis.set_tick_params(rotation=90)
         elif isinstance(x[0], DecisionTreeClassifier):
-            x = convert_boosting_base_estimator_parameters_list(x)
+            x = convert_boosting_base_estimator_parameters_list(x, dt_param)
             ax[0, i].xaxis.set_tick_params(rotation=90)
             ax[1, i].xaxis.set_tick_params(rotation=90)
 
@@ -719,3 +733,5 @@ def plot_grid_search_2_params(gs_results, name_param_1, name_param_2, score_limi
     save_plot_name = PLOT_SAVE_LOCATION + DATASET.replace(" ", "_") + "_" + ALGO + "_" + "GridScore_" + name_param_1 + "_" + name_param_2 + "_" + str(plot_counter) + ".png"
     print("Plot saved as: ", save_plot_name)
     plt.savefig(save_plot_name, bbox_inches="tight")
+    plt.tight_layout()
+    plt.show()
