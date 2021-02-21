@@ -64,6 +64,9 @@ To be specific the algorithms used the following jupyter notebooks:
 * Noisy Non-Linear Data Set
     SVMs/generated_noisy_nonlinear_SVM_analysis.ipynb
 
+## Python packages
+I think the python packages are pretty standard but a requirements.txt file is provided in the repo listing all packages
+that were installed when running the code
 
 # References
 The code primarily uses scikit-learn https://scikit-learn.org/stable/
