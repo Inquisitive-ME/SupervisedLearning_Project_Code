@@ -76,5 +76,5 @@ All specific code references are in the code directly
 UTKFace data set:
 https://susanqq.github.io/UTKFace/
 
-
-
+Class Lectures:
+https://classroom.udacity.com/courses/ud262
