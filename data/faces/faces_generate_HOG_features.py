@@ -91,5 +91,5 @@ def generate_HOG_features(write_compressed_file=False):
 
 
 if __name__ == "__main__":
-    generate_HOG_features(write_compressed_file=True)
+    # generate_HOG_features(write_compressed_file=True)
     create_feature_image()
